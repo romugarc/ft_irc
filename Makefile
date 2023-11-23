@@ -1,28 +1,18 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: rgarcia <marvin@42.fr>                     +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2023/11/09 06:55:19 by rgarcia           #+#    #+#              #
-#    Updated: 2023/11/09 10:55:44 by rgarcia          ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
 NAME	=	ircserv
 
-SRCS	=	main.cpp		
+SRCS	=	main.cpp			\
+			source/Server.cpp	\
+			source/User.cpp	\
+			source/Channel.cpp	\
+
 OBJS	=	${SRCS:.cpp=.o}
 
-HEADER_FILES	=	Server.hpp	\
-					User.hpp	\
-					Channel.hpp
+DIR_INC	=	include
 
 CC		=	c++
 RM		=	rm -f
 
-CFLAGS	=	-Wall -Wextra -Werror -Wconversion -std=c++98 -fsanitize=address
+CFLAGS	=	-Wall -Wextra -Werror -Wconversion -I$(DIR_INC) -std=c++98 -fsanitize=address
 
 all:		${NAME}
 
