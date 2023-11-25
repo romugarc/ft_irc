@@ -3,6 +3,9 @@
 
 #include "ft_irc.hpp"
 
+class User;
+class Channel;
+
 class Server
 {
     private:
@@ -10,6 +13,8 @@ class Server
         std::string _password;
         int _socket_fd;
         std::vector<struct pollfd> _fds;
+        std::deque<User *>      _users;
+        std::deque<Channel *>   _channels;
 
     public:
         Server(void);
@@ -28,6 +33,8 @@ class Server
 
         void createUser(void);
         void userMsg(std::vector<struct pollfd>::iterator i);
+
+        //User  findUser(int fd);
 };
 
 #endif

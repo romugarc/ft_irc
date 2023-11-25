@@ -96,11 +96,16 @@ void    Server::deleteSocket(void)
         _fds.erase(user_fd); //erase le vecteur de chaque user
     }
 
-    ////////////////////////////close les channel socket?
+    ////////////////////////////close les channel socket? -- Non, les channels n'ont pas de sockets
 
     if (close(_socket_fd)) //close la socket du server
         throw std::runtime_error("Error: close()");
 }
+
+// void    tokenizeMessage(std::string message)
+// {
+//     if (message.substr("PASS"))
+// }
 
 void    Server::createUser(void)
 {
@@ -115,6 +120,9 @@ void    Server::createUser(void)
     std::cout << "New User Socket fd : " << _fds.back().fd << std::endl;
 
     //////////////////////////faire un new User et lui attribuer son socket (et son fd?)
+    //User    newuser;
+
+    //_users.push_back(&newuser);
     //////////////////////////faire un tableau de users dans la Server class pour accepter plusieurs users
 }
 

@@ -9,6 +9,7 @@
 #include <unistd.h> //close()
 #include <poll.h> //poll(), struct pollfd
 #include <vector>
+#include <deque>
 
 #include "Server.hpp"
 #include "Channel.hpp"

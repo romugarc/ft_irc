@@ -3,7 +3,7 @@ NAME	=	ircserv
 SRCS	=	main.cpp			\
 			source/Server.cpp	\
 			source/User.cpp	\
-			source/Channel.cpp	\
+			source/Channel.cpp
 
 OBJS	=	${SRCS:.cpp=.o}
 
