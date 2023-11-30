@@ -26,6 +26,7 @@ class Server
 
         const std::string &getPort(void) const;
         const std::string &getPassword(void) const;
+        void    displayAllUsers(void) const;
 
         void createSocket(void);
         void loop(void);
@@ -34,7 +35,7 @@ class Server
         void createUser(void);
         void userMsg(std::vector<struct pollfd>::iterator i);
 
-        //User  findUser(int fd);
+        size_t  findUser(int fd);
 };
 
 #endif

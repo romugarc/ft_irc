@@ -6,7 +6,13 @@ Server::Server(const Server &src) {*this = src;}
 
 Server::Server(std::string port, std::string password) : _port(port), _password(password) { }
 
-Server::~Server(void) { }
+Server::~Server(void) 
+{
+    for (size_t i = 0; i < _users.size(); i++)
+    {
+        delete _users[i];
+    }
+}
 
 const std::string &Server::getPort(void) const
 {
@@ -77,14 +83,17 @@ void    Server::loop(void)
         if (poll(&_fds[0], n_fds, -1) == -1)
             throw std::runtime_error("Error server: poll");
         if (_fds[0].revents & POLLIN) //si un event POLLIN sur le serv
+        {
             createUser();
+            Server::displayAllUsers();
+        }
         for (std::vector<struct pollfd>::iterator user_fd = _fds.begin() + 1; user_fd < _fds.end(); user_fd++)
         {
             if (user_fd->revents & POLLIN) //si un event POLLIN sur un user
                 userMsg(user_fd);
         }
         //std::cout << "TEST LOOP" << std::endl;
-    }
+   }
 }
 
 void    Server::deleteSocket(void)
@@ -119,11 +128,29 @@ void    Server::createUser(void)
         throw std::runtime_error("Error: accept()");
     std::cout << "New User Socket fd : " << _fds.back().fd << std::endl;
 
-    //////////////////////////faire un new User et lui attribuer son socket (et son fd?)
-    //User    newuser;
+    User    *newuser = new User;
 
-    //_users.push_back(&newuser);
-    //////////////////////////faire un tableau de users dans la Server class pour accepter plusieurs users
+    _users.push_back(newuser);
+    _users.back()->setFd(_fds.back().fd);
+}
+
+void    Server::displayAllUsers(void) const //fonction de test modifiable a volonte
+{
+    for (size_t i = 0; i < _users.size(); i++)
+    {
+        std::cout << i << ": " << _users[i]->getFd() << std::endl;
+        std::cout << _users[i]->getMessage() << std::endl;
+    }
+}
+
+size_t Server::findUser( int fd )
+{
+    for (size_t i = 0; i < _users.size(); i++)
+    {
+        if (fd == _users[i]->getFd())
+            return (i);
+    }
+    return (2147483648); //-1 sur un int
 }
 
 void    Server::userMsg(std::vector<struct pollfd>::iterator user_fd)
@@ -131,6 +158,7 @@ void    Server::userMsg(std::vector<struct pollfd>::iterator user_fd)
     char buffer[BUFFER_SIZE];
     ssize_t n = BUFFER_SIZE;
     std::string message;
+    size_t user_id;
 
     for (int j = 0; j < BUFFER_SIZE; j++)
         buffer[j] = 0;
@@ -148,6 +176,11 @@ void    Server::userMsg(std::vector<struct pollfd>::iterator user_fd)
         else
         {
             message.insert(message.length(), buffer, static_cast<size_t>(n));
+            user_id = findUser(user_fd->fd);
+            _users[user_id]->setMessage(message);
+            //_users[user_id]->execute(/*arg*/);
+            //se concentrer sur join
+            Server::displayAllUsers();
             std::cout << "User (socket fd : " << user_fd->fd << " ) :" << message << std::endl;
         }
     }
