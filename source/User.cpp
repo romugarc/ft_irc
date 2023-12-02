@@ -13,7 +13,13 @@ User::~User()
 
 User &User::operator=( User const &rhs ) 
 {
-	(void)rhs;
+	this->_fd = rhs.getFd();
+	this->_logged_in = rhs.getLoggedIn();
+	this->_pass = rhs.getPass();
+	this->_nick = rhs.getNick();
+	this->_username = rhs.getUsername();
+	this->_message = rhs.getMessage();
+	//this->_tokens = rhs.getTokens();
 	return *this;
 }
 
@@ -83,4 +89,34 @@ std::string	User::getUsername( void ) const
 std::string	User::getMessage( void ) const
 {
 	return (this->_message);
+}
+
+////////////////////////functions////////////////////////
+
+void	User::tokenizeMessage(std::string message)
+{
+	if (_tokens.size() > 0)
+		_tokens.clear();
+	size_t	j;
+	for (size_t i = 0; i < message.length(); i++)
+	{
+		j = i;
+		while (message[j] <= ' ' && message[j] != '\0')
+			j++;
+		i = j;
+		while (message[j] > ' ' && message[j] != '\0')
+			j++;
+		if (j - i > 0)
+			_tokens.push_back(message.substr(i, (j - i)));
+		i = j;
+	}
+}
+
+void	User::displayTokens( void ) const
+{
+	for (size_t i = 0; i < _tokens.size(); i++)
+	{
+		std::cout << "displaying tokens: ";
+		std::cout << _tokens[i] << std::endl;
+	}
 }

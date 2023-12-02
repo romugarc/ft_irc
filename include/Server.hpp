@@ -12,7 +12,7 @@ class Server
         std::string _port;
         std::string _password;
         int _socket_fd;
-        std::vector<struct pollfd> _fds;
+        std::vector<struct pollfd> _fds; //transformer en deque
         std::deque<User *>      _users;
         std::deque<Channel *>   _channels;
 
@@ -35,7 +35,7 @@ class Server
         void createUser(void);
         void userMsg(std::vector<struct pollfd>::iterator i);
 
-        size_t  findUser(int fd);
+        User    *findUser(int fd);
 };
 
 #endif

@@ -143,14 +143,14 @@ void    Server::displayAllUsers(void) const //fonction de test modifiable a volo
     }
 }
 
-size_t Server::findUser( int fd )
+User *Server::findUser( int fd )
 {
     for (size_t i = 0; i < _users.size(); i++)
     {
         if (fd == _users[i]->getFd())
-            return (i);
+            return (_users[i]);
     }
-    return (2147483648); //-1 sur un int
+    return (NULL); //jamais null dans userMsg
 }
 
 void    Server::userMsg(std::vector<struct pollfd>::iterator user_fd)
@@ -158,7 +158,7 @@ void    Server::userMsg(std::vector<struct pollfd>::iterator user_fd)
     char buffer[BUFFER_SIZE];
     ssize_t n = BUFFER_SIZE;
     std::string message;
-    size_t user_id;
+    User *current_user;
 
     for (int j = 0; j < BUFFER_SIZE; j++)
         buffer[j] = 0;
@@ -176,11 +176,13 @@ void    Server::userMsg(std::vector<struct pollfd>::iterator user_fd)
         else
         {
             message.insert(message.length(), buffer, static_cast<size_t>(n));
-            user_id = findUser(user_fd->fd);
-            _users[user_id]->setMessage(message);
-            //_users[user_id]->execute(/*arg*/);
+            current_user = findUser(user_fd->fd);
+            current_user->setMessage(message);
+            current_user->tokenizeMessage(message);
+            //current_user->displayTokens(); //fonction pour tester
+            //current_user->execute(/*arg*/);
             //se concentrer sur join
-            Server::displayAllUsers();
+            //Server::displayAllUsers();
             std::cout << "User (socket fd : " << user_fd->fd << " ) :" << message << std::endl;
         }
     }

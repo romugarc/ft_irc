@@ -12,13 +12,15 @@ class	User
 		std::string _nick;
 		std::string	_username;
 		std::string	_message;
-		// std::deque<std::string> tokens;
+		std::deque<std::string> _tokens;
 	public:
 		User( void );
 		User( User const &src );
 		~User();
 
 		User &operator=( User const &rhs );
+
+		void	displayTokens( void ) const;
 
 		void	setFd( int fd );
 		void	setLoggedIn( bool logged );
@@ -39,7 +41,7 @@ class	User
 
 		////////////////parsing
 		//void	parseMessage(std::string message);
-		//void	tokenizeArguments(std::string message);
+		void	tokenizeMessage(std::string message);
 };
 
 #endif
