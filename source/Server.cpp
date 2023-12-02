@@ -111,11 +111,6 @@ void    Server::deleteSocket(void)
         throw std::runtime_error("Error: close()");
 }
 
-// void    tokenizeMessage(std::string message)
-// {
-//     if (message.substr("PASS"))
-// }
-
 void    Server::createUser(void)
 {
     struct sockaddr_in sock_new_user; //sockaddr_in = ipv4 internet domain
