@@ -1,0 +1,14 @@
+Server:
+- Remplacer std::vector en std::deque pour fds
+- Enlever les users qui se sont déconnectés de la liste de users
+- Fix l'erreur de bind() (?)
+- Faire les retours d'erreur
+
+User:
+- Faire la fonction execute
+- Faire les fonctions de commande
+- Faire les retours d'erreur
+
+Channel:
+- Faire createChannel puis join
+- Faire les retours d'erreur

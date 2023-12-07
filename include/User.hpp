@@ -35,13 +35,13 @@ class	User
 		std::string	getNick( void ) const;
 		std::string	getUsername( void ) const;
 		std::string	getMessage( void ) const;
+		char	getLastChar( void ) const;
 		std::deque<std::string>	getTokens( void ) const;
 
 		void execute( void );
 		//void	join(std::deque<std::string> tokens);
 
 		////////////////parsing
-		//void	parseMessage(std::string message);
 		void	tokenizeMessage(std::string message);
 };
 

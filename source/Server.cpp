@@ -85,12 +85,15 @@ void    Server::loop(void)
         if (_fds[0].revents & POLLIN) //si un event POLLIN sur le serv
         {
             createUser();
-            Server::displayAllUsers();
+            //Server::displayAllUsers(); //fonction test affiche les users et leur contenu, fonction customisable
         }
         for (std::vector<struct pollfd>::iterator user_fd = _fds.begin() + 1; user_fd < _fds.end(); user_fd++)
         {
             if (user_fd->revents & POLLIN) //si un event POLLIN sur un user
+            {
                 userMsg(user_fd);
+                //Server::displayAllUsers();
+            }
         }
         //std::cout << "TEST LOOP" << std::endl;
    }
@@ -173,10 +176,16 @@ void    Server::userMsg(std::vector<struct pollfd>::iterator user_fd)
             message.insert(message.length(), buffer, static_cast<size_t>(n));
             current_user = findUser(user_fd->fd);
             current_user->setMessage(message);
-            current_user->tokenizeMessage(message);
-            //current_user->displayTokens(); //fonction pour tester
-            //current_user->execute(/*arg*/);
-            //se concentrer sur join
+            if (current_user->getLastChar() == '\n')
+            {
+                current_user->tokenizeMessage(current_user->getMessage());
+                //current_user->execute(/*arg*/);
+                //se concentrer sur join
+            }
+            // std::cout << "message: " << current_user->getMessage() << std::endl;
+            // std::cout << "lastchar: " << current_user->getLastChar() << ":" << std::endl;
+            // std::cout << "nb tokens: " << current_user->getTokens().size() << std::endl;
+            // current_user->displayTokens();
             //Server::displayAllUsers();
             std::cout << "User (socket fd : " << user_fd->fd << " ) :" << message << std::endl;
         }

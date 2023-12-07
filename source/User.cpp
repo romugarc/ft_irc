@@ -58,8 +58,13 @@ void	User::setUsername( std::string str )
 
 void	User::setMessage( std::string str )
 {
-	//parse str for requirements
-	this->_message = str;
+	//gérer les ctrlD, donc gérer les messages jusqu'a recevoir un /n
+	if (this->_message.empty())
+		this->_message = str;
+	else if (this->_message[this->_message.length() - 1] != '\n')
+		this->_message.append(str);
+	else
+		this->_message = str;
 }
 
 ////////////////////////getters////////////////////////
@@ -92,6 +97,13 @@ std::string	User::getUsername( void ) const
 std::string	User::getMessage( void ) const
 {
 	return (this->_message);
+}
+
+char User::getLastChar( void ) const
+{
+	if (this->_message.empty())
+		return ('\0');
+	return (this->_message[this->_message.length() - 1]);
 }
 
 std::deque<std::string>	User::getTokens( void ) const
