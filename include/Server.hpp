@@ -33,7 +33,8 @@ class Server
         void deleteSocket(void);
 
         void createUser(void);
-        void userMsg(std::vector<struct pollfd>::iterator i);
+        void deleteUser(int user_fd);
+        void userMsg(int user_fd);
 
         User    *findUser(int fd);
 };
