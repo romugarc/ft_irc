@@ -141,7 +141,7 @@ void	User::displayTokens( void ) const //fonction test
 	}
 }
 
-void	User::execute( void ) //prototype a changer surement
+void	User::execute( Server *server ) //prototype a changer surement
 {
 	std::string	commands[1] = {"JOIN"}; //, "KICK", "INVITE", "TOPIC", "MODE"}; //ajouter fonctions au jur et a mesure
 	int	i = 0;
@@ -152,10 +152,23 @@ void	User::execute( void ) //prototype a changer surement
 	switch (i) //agrandir ce switch au fur et a mesure
 	{
 		case 0:
-			//join
+			join(this->_tokens, server);
 			break;
 		default:
 			//throw exception?
 			break;
 	}
+}
+
+int	User::join( std::deque<std::string> tokens, Server *server )
+{
+	if (tokens.size() <= 1 || tokens.size() > 3) //JOIN channel key uniquement, pas de multichannel
+		return 0;
+	for (size_t i = 1; i < tokens.size(); i++)
+	{
+		if (tokens.size() - i > 1)
+			server->createChannel(this, tokens[i], tokens[i + 1]);
+		server->createChannel(this, tokens[i]);
+	}
+	return 1;
 }

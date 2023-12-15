@@ -27,6 +27,7 @@ class Server
         const std::string &getPort(void) const;
         const std::string &getPassword(void) const;
         void    displayAllUsers(void) const;
+        void    displayAllChannels(void) const;
 
         void createSocket(void);
         void loop(void);
@@ -35,6 +36,9 @@ class Server
         void createUser(void);
         void deleteUser(int user_fd);
         void userMsg(int user_fd);
+
+        void createChannel(User *user_creator, std::string name, std::string key);
+        void createChannel(User *user_creator, std::string name);
 
         User    *findUser(int fd);
 };

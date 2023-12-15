@@ -145,14 +145,16 @@ void Server::deleteUser(int user_fd)
             break;
         }
     }
-}
-
-void    Server::displayAllUsers(void) const //fonction de test modifiable a volonte
-{
-    for (size_t i = 0; i < _users.size(); i++)
+    
+    size_t i = 0;
+    for (std::deque<User*>::iterator it = _users.begin(); it < _users.end(); it++)
     {
-        std::cout << i << ": " << _users[i]->getFd() << std::endl;
-        std::cout << _users[i]->getMessage() << std::endl;
+        if (_users[i]->getFd() == user_fd)
+        {
+            _users.erase(it);
+            break;
+        }
+        i++;
     }
 }
 
@@ -191,12 +193,13 @@ void    Server::userMsg(int user_fd)
             message.insert(message.length(), buffer, static_cast<size_t>(n));
             current_user = findUser(user_fd);
             current_user->setMessage(message);
-            //if (current_user->getLastChar() == '\n')
-            //{
-                //current_user->tokenizeMessage(current_user->getMessage());
-                //current_user->execute(/*arg*/);
-                //se concentrer sur join
-            //}
+            if (current_user->getLastChar() == '\n')
+            {
+                current_user->tokenizeMessage(current_user->getMessage());
+                current_user->execute(this);
+                Server::displayAllChannels();
+                // se concentrer sur join
+            }
             // std::cout << "message: " << current_user->getMessage() << std::endl;
             // std::cout << "lastchar: " << current_user->getLastChar() << ":" << std::endl;
             // std::cout << "nb tokens: " << current_user->getTokens().size() << std::endl;
@@ -204,5 +207,43 @@ void    Server::userMsg(int user_fd)
             //Server::displayAllUsers();
             std::cout << "User (socket fd : " << user_fd << " ) :" << message << std::endl;
         }
+    }
+}
+
+void    Server::createChannel( User *user_creator, std::string name, std::string key )
+{
+    Channel    *newchannel = new Channel;
+
+    newchannel->setOperator(user_creator);
+    newchannel->setChannelName(name);
+    newchannel->setChannelKey(key);
+    _channels.push_back(newchannel);
+}
+
+void    Server::createChannel( User *user_creator, std::string name )
+{
+    Channel    *newchannel = new Channel;
+
+    newchannel->setOperator(user_creator);
+    newchannel->setChannelName(name);
+    _channels.push_back(newchannel);
+}
+
+////////////////////////displays for testing////////////////////////
+  
+void    Server::displayAllUsers(void) const //fonction de test modifiable a volonte
+{
+    for (size_t i = 0; i < _users.size(); i++)
+    {
+        std::cout << i << ": " << _users[i]->getFd() << std::endl;
+        std::cout << _users[i]->getMessage() << std::endl;
+    }
+}
+
+void    Server::displayAllChannels(void) const //fonction de test modifiable a volonte
+{
+    for (size_t i = 0; i < _channels.size(); i++)
+    {
+        std::cout << i << ": " << _channels[i]->getChannelName() << std::endl;
     }
 }

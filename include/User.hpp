@@ -3,6 +3,8 @@
 
 #include "ft_irc.hpp"
 
+class Server;
+
 class	User
 {
 	private:
@@ -38,8 +40,8 @@ class	User
 		char	getLastChar( void ) const;
 		std::deque<std::string>	getTokens( void ) const;
 
-		void execute( void );
-		//void	join(std::deque<std::string> tokens);
+		void execute( Server *server );
+		int	join( std::deque<std::string> tokens, Server *server );
 
 		////////////////parsing
 		void	tokenizeMessage(std::string message);
