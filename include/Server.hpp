@@ -40,6 +40,9 @@ class Server
         void createChannel(User *user_creator, std::string name, std::string key);
         void createChannel(User *user_creator, std::string name);
 
+		void execute( User *current_user );
+		int	join( User *current_user, std::deque<std::string> tokens );
+
         User    *findUser(int fd);
 };
 

@@ -39,10 +39,7 @@ class	User
 		std::string	getMessage( void ) const;
 		char	getLastChar( void ) const;
 		std::deque<std::string>	getTokens( void ) const;
-
-		void execute( Server *server );
-		int	join( std::deque<std::string> tokens, Server *server );
-
+		
 		////////////////parsing
 		void	tokenizeMessage(std::string message);
 };

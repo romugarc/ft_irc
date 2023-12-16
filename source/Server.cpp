@@ -196,7 +196,7 @@ void    Server::userMsg(int user_fd)
             if (current_user->getLastChar() == '\n')
             {
                 current_user->tokenizeMessage(current_user->getMessage());
-                current_user->execute(this);
+                Server::execute(current_user);
                 Server::displayAllChannels();
                 // se concentrer sur join
             }
@@ -229,6 +229,40 @@ void    Server::createChannel( User *user_creator, std::string name )
     _channels.push_back(newchannel);
 }
 
+////////////////////////execution////////////////////////
+
+void	Server::execute( User *current_user )
+{
+	std::string	commands[1] = {"JOIN"}; //, "KICK", "INVITE", "TOPIC", "MODE"}; //ajouter fonctions au jur et a mesure
+	int	i = 0;
+
+	if (current_user->getTokens().size() > 0)
+		while (current_user->getTokens()[0] != commands[i] && i++ < 1);
+
+	switch (i) //agrandir ce switch au fur et a mesure
+	{
+		case 0:
+			join(current_user, current_user->getTokens());
+			break;
+		default:
+			//throw exception?
+			break;
+	}
+}
+
+int	Server::join( User *current_user, std::deque<std::string> tokens )
+{
+	if (tokens.size() <= 1 || tokens.size() > 3) //JOIN channel key uniquement, pas de multichannel
+		return 0;
+	for (size_t i = 1; i < tokens.size(); i++)
+	{
+		if (tokens.size() - i > 1)
+			Server::createChannel(current_user, tokens[i], tokens[i + 1]);
+		Server::createChannel(current_user, tokens[i]);
+	}
+	return 1;
+}
+
 ////////////////////////displays for testing////////////////////////
   
 void    Server::displayAllUsers(void) const //fonction de test modifiable a volonte
@@ -244,6 +278,6 @@ void    Server::displayAllChannels(void) const //fonction de test modifiable a v
 {
     for (size_t i = 0; i < _channels.size(); i++)
     {
-        std::cout << i << ": " << _channels[i]->getChannelName() << std::endl;
+        std::cout << i << "channel: " << _channels[i]->getChannelName() << std::endl;
     }
 }
