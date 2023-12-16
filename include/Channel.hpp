@@ -25,8 +25,12 @@ class	Channel
 		void	setChannelName( std::string name );
 		void	setChannelKey( std::string key );
 
-		std::string	getChannelName( void );
-		std::string	getChannelKey( void );
+		std::string	getChannelName( void ) const;
+		std::string	getChannelKey( void ) const;
+		std::deque<User*> getUserList( void ) const;
+		std::deque<User*> getOpList( void ) const;
+		std::deque<User*> getBanList( void ) const;
+
 
 		std::deque<User*>	getOpList( void );
 };

@@ -53,6 +53,11 @@ std::deque<User *>	Channel::getOpList( void )
 	return (this->_oplist);
 }
 
+std::deque<User *>	Channel::getBanList( void )
+{
+	return (this->_banlist);
+}
+
 std::string	Channel::getChannelName( void )
 {
 	return (this->_chan_name);
