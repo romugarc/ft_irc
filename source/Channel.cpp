@@ -48,22 +48,22 @@ void	Channel::setChannelKey( std::string key )
 
 ////////////////////////getters////////////////////////
 
-std::deque<User *>	Channel::getOpList( void )
+std::deque<User *>	Channel::getOpList( void ) const
 {
 	return (this->_oplist);
 }
 
-std::deque<User *>	Channel::getBanList( void )
+std::deque<User *>	Channel::getBanList( void ) const
 {
 	return (this->_banlist);
 }
 
-std::string	Channel::getChannelName( void )
+std::string	Channel::getChannelName( void ) const
 {
 	return (this->_chan_name);
 }
 
-std::string	Channel::getChannelKey( void )
+std::string	Channel::getChannelKey( void ) const
 {
 	return (this->_chan_key);
 }
