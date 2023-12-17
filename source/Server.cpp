@@ -214,16 +214,7 @@ void    Server::userMsg(int user_fd)
         }
     }
     std::cout << "User fd " << user_fd << " : " << std::endl << GREEN;
-    for(std::string::iterator it=message.begin(); it!=message.end(); it++)
-    {
-        if (*it == '\r')
-            std::cout << "\\r";
-        else if (*it == '\n')
-            std::cout << "\\n";
-        else
-            std::cout << *it;
-    }
-    std::cout << RESET << std::endl;
+    displayMessage(message);
 
     current_user = findUser(user_fd);
     current_user->setMessage(message);
@@ -279,19 +270,32 @@ void	Server::execute( User *current_user )
 }
 
 ////////////////////////displays for testing////////////////////////
-  
+
+void Server::displayMessage(std::string message) const
+{
+    for(std::string::iterator it=message.begin(); it!=message.end(); it++)
+    {
+        if (*it == '\r')
+            std::cout << "\\r";
+        else if (*it == '\n')
+            std::cout << "\\n";
+        else
+            std::cout << *it;
+    }
+    std::cout << RESET << std::endl;
+}
+
 void    Server::displayAllUsers(void) const //fonction de test modifiable a volonte
 {
-    std::cout << "nº\tFD\t\tNickname\tUsername\tHost\t\tStatus\t\tLast Message" << std::endl;
+    std::cout << "nº\tFD\t\tNickname\tUsername\t\tStatus\t\tLast Message" << std::endl;
     for (size_t i = 0; i < _users.size(); i++)
     {
         std::cout << i << "\t";
         std::cout << _users[i]->getFd() << "\t\t";
-        std::cout << "\t\t";
-        std::cout << "\t\t";
-        std::cout << "\t\t";
-        std::cout << "\t\t";
-        std::cout << _users[i]->getMessage();
+        std::cout << _users[i]->getNick() << "\t\t";
+        std::cout << _users[i]->getUsername() << "\t\t";
+        std::cout << _users[i]->getLoggedIn() << "\t\t";
+        displayMessage(_users[i]->getMessage());
         std::cout << std::endl;
     }
 }

@@ -26,6 +26,7 @@ class Server
 
         const std::string &getPort(void) const;
         const std::string &getPassword(void) const;
+        void    displayMessage(std::string message) const;
         void    displayAllUsers(void) const;
         void    displayAllChannels(void) const;
 
