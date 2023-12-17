@@ -1,7 +1,7 @@
 #ifndef SERVER_HPP
 #define	SERVER_HPP
 
-#include "ft_irc.hpp"
+#include "Commands.hpp"
 
 class User;
 class Channel;
@@ -41,7 +41,6 @@ class Server
         void createChannel(User *user_creator, std::string name);
 
 		void execute( User *current_user );
-		int	join( User *current_user, std::deque<std::string> tokens );
 
         User    *findUser(int fd);
 };

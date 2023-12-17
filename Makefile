@@ -2,8 +2,10 @@ NAME	=	ircserv
 
 SRCS	=	main.cpp			\
 			source/Server.cpp	\
-			source/User.cpp	\
-			source/Channel.cpp
+			source/User.cpp		\
+			source/Channel.cpp	\
+			source/Rep.cpp		\
+			source/commands/join.cpp
 
 OBJS	=	${SRCS:.cpp=.o}
 

@@ -55,7 +55,12 @@ void    Server::createSocket(void)
         freeaddrinfo(servinfo);
         throw std::runtime_error("Error: socket()");
     }
-    //////////////////////////faire setsockopt pour eviter l'erreur de bind
+    int optvalue = 1;
+    if (setsockopt(_socket_fd, SOL_SOCKET, SO_REUSEADDR, &optvalue, sizeof(optvalue)) == -1) // allow the re_use of a port id the IP address is different
+    {
+        freeaddrinfo(servinfo);
+        throw std::runtime_error("Error: setsockopt()");
+    }
     if (bind(_socket_fd, servinfo->ai_addr, servinfo->ai_addrlen) == -1) //affecte l'adresse a la socket
     {
         freeaddrinfo(servinfo);
@@ -77,25 +82,35 @@ void    Server::loop(void)
     serv_fd.events = POLLIN; //POLLIN = attente de lecture | POLLOUT = ecriture non-bloquante
     _fds.push_back(serv_fd); //vector<struct pollfd>
 
+    std::cout << GREEN << "GREEN Message Client" << RESET << std::endl;
+    std::cout << CYAN << "CYAN Reponse Server" << RESET << std::endl;
+
     while (1)
     {
+        static int i;
+        i++;
+        std::cout << "\r(Poll " << i << ") " << std::flush;
+
         nfds_t n_fds = _fds.size(); //nfds_t = size_t pour pollfd
         if (poll(&_fds[0], n_fds, -1) == -1)
             throw std::runtime_error("Error server: poll");
         if (_fds[0].revents & POLLIN) //si un event POLLIN sur le serv
         {
             createUser();
-            //Server::displayAllUsers(); //fonction test affiche les users et leur contenu, fonction customisable
+            //displayAllUsers();
         }
         for (std::vector<struct pollfd>::iterator i_pollfd = _fds.begin() + 1; i_pollfd < _fds.end(); i_pollfd++)
         {
             if (i_pollfd->revents & POLLIN) //si un event POLLIN sur un user
             {
                 userMsg(i_pollfd->fd);
-                //Server::displayAllUsers();
+                //displayAllUsers();
+            }
+            if (i_pollfd->revents & POLLOUT) //si un event POLLOUT sur un user
+            {
+                //servMsgtoUser(i_pollfd->fd);
             }
         }
-        //std::cout << "TEST LOOP" << std::endl;
    }
 }
 
@@ -107,9 +122,6 @@ void    Server::deleteSocket(void)
             throw std::runtime_error("Error: close()");
         _fds.erase(i_pollfd); //erase le vecteur de chaque user
     }
-
-    ////////////////////////////close les channel socket? -- Non, les channels n'ont pas de sockets
-
     if (close(_socket_fd)) //close la socket du server
         throw std::runtime_error("Error: close()");
     std::cout << "Delete Server Socket fd : " << _socket_fd << std::endl;
@@ -121,11 +133,18 @@ void    Server::createUser(void)
     socklen_t sock_new_user_len = sizeof(sock_new_user);
 
     _fds.push_back(pollfd());
-    _fds.back().events = POLLIN;
 	_fds.back().fd = accept(_socket_fd, (struct sockaddr *)(&sock_new_user), &sock_new_user_len); //accepte la connexion user (POLLIN) et retourne la socket user
+    _fds.back().events = POLLIN | POLLOUT;
     if (_fds.back().fd == -1)
         throw std::runtime_error("Error: accept()");
-    std::cout << "User Connection fd : " << _fds.back().fd << std::endl;
+    if (fcntl(_fds.back().fd, F_SETFL, O_NONBLOCK) == -1)
+        throw std::runtime_error("Error: fcntl()");
+    /*int flags = fcntl(_fds.back().fd, F_GETFL, 0);
+    if (flags & O_NONBLOCK)
+        std::cout << "non_bloquant" << std::endl;
+    else
+        std::cout << "bloquant" << std::endl;*/
+    std::cout << "User Connection fd " << _fds.back().fd << std::endl;
 
     User    *newuser = new User;
 
@@ -187,27 +206,36 @@ void    Server::userMsg(int user_fd)
             if (close(user_fd))
                 throw std::runtime_error("Error: close()");
             deleteUser(user_fd);
+            return;
         }
         else
         {
             message.insert(message.length(), buffer, static_cast<size_t>(n));
-            current_user = findUser(user_fd);
-            current_user->setMessage(message);
-            if (current_user->getLastChar() == '\n')
-            {
-                current_user->tokenizeMessage(current_user->getMessage());
-                Server::execute(current_user);
-                Server::displayAllChannels();
-                // se concentrer sur join
-            }
-            // std::cout << "message: " << current_user->getMessage() << std::endl;
-            // std::cout << "lastchar: " << current_user->getLastChar() << ":" << std::endl;
-            // std::cout << "nb tokens: " << current_user->getTokens().size() << std::endl;
-            // current_user->displayTokens();
-            //Server::displayAllUsers();
-            std::cout << "User (socket fd : " << user_fd << " ) :" << message << std::endl;
         }
     }
+    std::cout << "User fd " << user_fd << " : " << std::endl << GREEN;
+    for(std::string::iterator it=message.begin(); it!=message.end(); it++)
+    {
+        if (*it == '\r')
+            std::cout << "\\r";
+        else if (*it == '\n')
+            std::cout << "\\n";
+        else
+            std::cout << *it;
+    }
+    std::cout << RESET << std::endl;
+
+    current_user = findUser(user_fd);
+    current_user->setMessage(message);
+    if (current_user->getLastChar() == '\n')
+    {
+        current_user->tokenizeMessage(current_user->getMessage());
+        Server::execute(current_user);
+        Server::displayAllChannels();
+    }
+    //std::cout << "message: " << current_user->getMessage() << std::endl;
+    //std::cout << "lastchar: " << current_user->getLastChar() << ":" << std::endl;
+    //std::cout << "nb tokens: " << current_user->getTokens().size() << std::endl;
 }
 
 void    Server::createChannel( User *user_creator, std::string name, std::string key )
@@ -242,7 +270,7 @@ void	Server::execute( User *current_user )
 	switch (i) //agrandir ce switch au fur et a mesure
 	{
 		case 0:
-			join(current_user, current_user->getTokens());
+			join(this, current_user, current_user->getTokens());
 			break;
 		default:
 			//throw exception?
@@ -250,27 +278,21 @@ void	Server::execute( User *current_user )
 	}
 }
 
-int	Server::join( User *current_user, std::deque<std::string> tokens )
-{
-	if (tokens.size() <= 1 || tokens.size() > 3) //JOIN channel key uniquement, pas de multichannel
-		return 0;
-	for (size_t i = 1; i < tokens.size(); i++)
-	{
-		if (tokens.size() - i > 1)
-			Server::createChannel(current_user, tokens[i], tokens[i + 1]);
-		Server::createChannel(current_user, tokens[i]);
-	}
-	return 1;
-}
-
 ////////////////////////displays for testing////////////////////////
   
 void    Server::displayAllUsers(void) const //fonction de test modifiable a volonte
 {
+    std::cout << "nº\tFD\t\tNickname\tUsername\tHost\t\tStatus\t\tLast Message" << std::endl;
     for (size_t i = 0; i < _users.size(); i++)
     {
-        std::cout << i << ": " << _users[i]->getFd() << std::endl;
-        std::cout << _users[i]->getMessage() << std::endl;
+        std::cout << i << "\t";
+        std::cout << _users[i]->getFd() << "\t\t";
+        std::cout << "\t\t";
+        std::cout << "\t\t";
+        std::cout << "\t\t";
+        std::cout << "\t\t";
+        std::cout << _users[i]->getMessage();
+        std::cout << std::endl;
     }
 }
 
