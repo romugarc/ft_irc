@@ -11,7 +11,7 @@ class	Channel
 		//std::string _pass;
 		std::string	_chan_name;
 		std::string	_chan_key;
-		std::deque<User*> _userlist;
+		std::deque<User*> _userlist; //delete quand un user est delete dans le server
 		std::deque<User*> _oplist;
 		std::deque<User*> _banlist;
 	public:

@@ -124,11 +124,21 @@ void	User::tokenizeMessage(std::string message)
 		while (message[j] <= ' ' && message[j] != '\0')
 			j++;
 		i = j;
-		while (message[j] > ' ' && message[j] != '\0')
-			j++;
+		if (message[i] == ':')
+		{
+			while (message[j] != '\n' && message[j] != '\0')
+				j++;
+		}
+		else
+		{
+			while (message[j] > ' ' && message[j] != '\0')
+				j++;
+		}
 		if (j - i > 0)
 			this->_tokens.push_back(message.substr(i, (j - i)));
 		i = j;
+		if (message[i] == '\n')
+			break;
 	}
 }
 

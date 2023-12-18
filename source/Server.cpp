@@ -224,9 +224,10 @@ void    Server::userMsg(int user_fd)
         Server::execute(current_user);
         Server::displayAllChannels();
     }
-    //std::cout << "message: " << current_user->getMessage() << std::endl;
+    std::cout << "message: " << current_user->getMessage() << std::endl;
     //std::cout << "lastchar: " << current_user->getLastChar() << ":" << std::endl;
-    //std::cout << "nb tokens: " << current_user->getTokens().size() << std::endl;
+    current_user->displayTokens();
+    std::cout << "nb tokens: " << current_user->getTokens().size() << std::endl;
 }
 
 void    Server::createChannel( User *user_creator, std::string name, std::string key )
