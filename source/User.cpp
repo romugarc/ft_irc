@@ -38,10 +38,10 @@ void	User::setLoggedIn( bool logged )
 	this->_logged_in = logged;
 }
 
-void	User::setPass( std::string str )
+void	User::setPass( bool pass_status )
 {
 	//parse str for requirements
-	this->_pass = str;
+	this->_pass = pass_status;
 }
 
 void	User::setNick( std::string str )
@@ -79,7 +79,7 @@ bool	User::getLoggedIn( void ) const
 	return (this->_logged_in);
 }
 
-std::string	User::getPass( void ) const
+bool	User::getPass( void ) const
 {
 	return (this->_pass);
 }
@@ -99,13 +99,6 @@ std::string	User::getMessage( void ) const
 	return (this->_message);
 }
 
-char User::getLastChar( void ) const
-{
-	if (this->_message.empty())
-		return ('\0');
-	return (this->_message[this->_message.length() - 1]);
-}
-
 std::deque<std::string>	User::getTokens( void ) const
 {
 	return (this->_tokens);
@@ -118,35 +111,34 @@ void	User::tokenizeMessage(std::string message)
 	if (this->_tokens.size() > 0)
 		this->_tokens.clear();
 	size_t	j;
-	for (size_t i = 0; i < message.length(); i++)
+	for (size_t i = 0; i < message.find("\r\n"); i++)
 	{
 		j = i;
-		while (message[j] <= ' ' && message[j] != '\0')
+		while (message[j] == ' ' && message[j] != '\0')
 			j++;
 		i = j;
 		if (message[i] == ':')
 		{
-			while (message[j] != '\n' && message[j] != '\0')
+			while (j < message.find("\r\n") && message[j] != '\0')
 				j++;
 		}
 		else
 		{
-			while (message[j] > ' ' && message[j] != '\0')
+			while (message[j] != ' ' && j < message.find("\r\n") && message[j] != '\0')
 				j++;
 		}
 		if (j - i > 0)
 			this->_tokens.push_back(message.substr(i, (j - i)));
 		i = j;
-		if (message[i] == '\n')
-			break;
 	}
 }
 
 void	User::displayTokens( void ) const //fonction test
 {
+	std::cout << "nb tokens: " << getTokens().size() << std::endl;
 	for (size_t i = 0; i < this->_tokens.size(); i++)
 	{
-		std::cout << "displaying tokens: ";
+		std::cout << "token " << i << ": ";
 		std::cout << this->_tokens[i] << std::endl;
 	}
 }

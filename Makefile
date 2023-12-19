@@ -5,7 +5,10 @@ SRCS	=	main.cpp			\
 			source/User.cpp		\
 			source/Channel.cpp	\
 			source/Rep.cpp		\
-			source/commands/join.cpp
+			source/commands/join.cpp	\
+			source/commands/pass.cpp	\
+			source/commands/nick.cpp	\
+			source/commands/user.cpp
 
 OBJS	=	${SRCS:.cpp=.o}
 

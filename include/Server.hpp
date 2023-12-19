@@ -26,6 +26,8 @@ class Server
 
         const std::string &getPort(void) const;
         const std::string &getPassword(void) const;
+        const std::deque<User *> &getUsers(void) const;
+        const std::deque<Channel *> &getChannels(void) const;
         void    displayMessage(std::string message) const;
         void    displayAllUsers(void) const;
         void    displayAllChannels(void) const;
@@ -37,13 +39,14 @@ class Server
         void createUser(void);
         void deleteUser(int user_fd);
         void userMsg(int user_fd);
+        void parseMsg(User *current_user, std::string message);
+        User *findUser(int fd);
 
         void createChannel(User *user_creator, std::string name, std::string key);
         void createChannel(User *user_creator, std::string name);
+        Channel *findChannel(std::string name);
 
 		void execute( User *current_user );
-
-        User    *findUser(int fd);
 };
 
 #endif

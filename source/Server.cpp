@@ -24,6 +24,16 @@ const std::string &Server::getPassword(void) const
     return (_password);
 }
 
+const std::deque<User *> &Server::getUsers(void) const
+{
+    return (_users);
+}
+
+const std::deque<Channel *> &Server::getChannels(void) const
+{
+    return (_channels);
+}
+
 Server  &Server::operator=(const Server &src)
 {
     this->_port = src._port;
@@ -83,7 +93,7 @@ void    Server::loop(void)
     _fds.push_back(serv_fd); //vector<struct pollfd>
 
     std::cout << GREEN << "GREEN Message Client" << RESET << std::endl;
-    std::cout << CYAN << "CYAN Reponse Server" << RESET << std::endl;
+    std::cout << CYAN << "CYAN Reply Server" << RESET << std::endl;
 
     while (1)
     {
@@ -104,7 +114,7 @@ void    Server::loop(void)
             if (i_pollfd->revents & POLLIN) //si un event POLLIN sur un user
             {
                 userMsg(i_pollfd->fd);
-                //displayAllUsers();
+                displayAllUsers();
             }
             if (i_pollfd->revents & POLLOUT) //si un event POLLOUT sur un user
             {
@@ -177,22 +187,11 @@ void Server::deleteUser(int user_fd)
     }
 }
 
-User *Server::findUser( int fd )
-{
-    for (size_t i = 0; i < _users.size(); i++)
-    {
-        if (fd == _users[i]->getFd())
-            return (_users[i]);
-    }
-    return (NULL); //jamais null dans userMsg
-}
-
 void    Server::userMsg(int user_fd)
 {
     char buffer[BUFFER_SIZE];
     ssize_t n = BUFFER_SIZE;
     std::string message;
-    User *current_user;
 
     for (int j = 0; j < BUFFER_SIZE; j++)
         buffer[j] = 0;
@@ -213,21 +212,37 @@ void    Server::userMsg(int user_fd)
             message.insert(message.length(), buffer, static_cast<size_t>(n));
         }
     }
-    std::cout << "User fd " << user_fd << " : " << std::endl << GREEN;
+    std::cout << "User fd " << user_fd << " : " << std::endl;
     displayMessage(message);
 
-    current_user = findUser(user_fd);
+    parseMsg(findUser(user_fd), message);
+}
+
+void    Server::parseMsg(User *current_user, std::string message)
+{
     current_user->setMessage(message);
-    if (current_user->getLastChar() == '\n')
+
+    while (message.find("\r\n") != std::string::npos)
     {
-        current_user->tokenizeMessage(current_user->getMessage());
-        Server::execute(current_user);
-        Server::displayAllChannels();
+        current_user->tokenizeMessage(message);
+        //current_user->displayTokens();
+        message = message.substr(message.find("\r\n") + 2, message.length());
+        execute(current_user);
     }
-    std::cout << "message: " << current_user->getMessage() << std::endl;
-    //std::cout << "lastchar: " << current_user->getLastChar() << ":" << std::endl;
-    current_user->displayTokens();
-    std::cout << "nb tokens: " << current_user->getTokens().size() << std::endl;
+
+    if (current_user->getLoggedIn() == false)
+        if (current_user->getPass() == true && !current_user->getUsername().empty() && !current_user->getNick().empty())
+            current_user->setLoggedIn(true);
+}
+
+User *Server::findUser( int fd )
+{
+    for (size_t i = 0; i < _users.size(); i++)
+    {
+        if (fd == _users[i]->getFd())
+            return (_users[i]);
+    }
+    return (NULL); //jamais null dans userMsg
 }
 
 void    Server::createChannel( User *user_creator, std::string name, std::string key )
@@ -249,19 +264,38 @@ void    Server::createChannel( User *user_creator, std::string name )
     _channels.push_back(newchannel);
 }
 
+Channel *Server::findChannel(std::string name)
+{
+    for (size_t i = 0; i < _channels.size(); i++)
+    {
+        if (!name.compare(_channels[i]->getChannelName()))
+            return (_channels[i]);
+    }
+    return (NULL);
+}
+
 ////////////////////////execution////////////////////////
 
 void	Server::execute( User *current_user )
 {
-	std::string	commands[1] = {"JOIN"}; //, "KICK", "INVITE", "TOPIC", "MODE"}; //ajouter fonctions au jur et a mesure
-	int	i = 0;
+	std::string	commands[4] = {"PASS", "NICK", "USER", "JOIN"}; //, "KICK", "INVITE", "TOPIC", "MODE"}; //ajouter fonctions au jur et a mesure
+	int	i = -1;
 
 	if (current_user->getTokens().size() > 0)
-		while (current_user->getTokens()[0] != commands[i] && i++ < 1);
+		while (current_user->getTokens()[0] != commands[i] && i++ < 12);
 
 	switch (i) //agrandir ce switch au fur et a mesure
 	{
 		case 0:
+			pass(this, current_user, current_user->getTokens());
+			break;
+		case 1:
+			nick(this, current_user, current_user->getTokens());
+			break;
+		case 2:
+			user(this, current_user, current_user->getTokens());
+			break;
+		case 3:
 			join(this, current_user, current_user->getTokens());
 			break;
 		default:
@@ -274,6 +308,7 @@ void	Server::execute( User *current_user )
 
 void Server::displayMessage(std::string message) const
 {
+    std::cout << GREEN;
     for(std::string::iterator it=message.begin(); it!=message.end(); it++)
     {
         if (*it == '\r')
@@ -288,13 +323,24 @@ void Server::displayMessage(std::string message) const
 
 void    Server::displayAllUsers(void) const //fonction de test modifiable a volonte
 {
-    std::cout << "nº\tFD\t\tNickname\tUsername\t\tStatus\t\tLast Message" << std::endl;
+    std::cout << "nº\tFD\t\tNickname\tUsername\tPWD Status\tStatus\t\tLast Message" << std::endl;
     for (size_t i = 0; i < _users.size(); i++)
     {
         std::cout << i << "\t";
         std::cout << _users[i]->getFd() << "\t\t";
-        std::cout << _users[i]->getNick() << "\t\t";
-        std::cout << _users[i]->getUsername() << "\t\t";
+        if (_users[i]->getNick().length() > 12)
+            std::cout << _users[i]->getNick().substr(0, 12) << "...\t";
+        else if (_users[i]->getNick().length() > 7)
+            std::cout << _users[i]->getNick() << "\t";
+        else
+            std::cout << _users[i]->getNick() << "\t\t";
+        if (_users[i]->getUsername().length() > 12)
+            std::cout << _users[i]->getUsername().substr(0 ,12) << "...\t";
+        else if (_users[i]->getUsername().length() > 7)
+            std::cout << _users[i]->getUsername() << "\t";
+        else
+            std::cout << _users[i]->getUsername() << "\t\t";
+        std::cout << _users[i]->getPass() << "\t\t";
         std::cout << _users[i]->getLoggedIn() << "\t\t";
         displayMessage(_users[i]->getMessage());
         std::cout << std::endl;

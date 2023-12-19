@@ -2,11 +2,27 @@
 
 //REP_ARG == int const &fd, const std::string &name
 
+static void displayReply(std::string message)
+{
+    std::cout << CYAN;
+    for(std::string::iterator it=message.begin(); it!=message.end(); it++)
+    {
+        if (*it == '\r')
+            std::cout << "\\r";
+        else if (*it == '\n')
+            std::cout << "\\n";
+        else
+            std::cout << *it;
+    }
+    std::cout << RESET << std::endl;
+}
+
 void	send_to_client(std::string msg, int const &fd)
 {
 	std::string	message;
 
 	message = msg +"\r\n";
+	displayReply(message);
 	if (send(fd, message.c_str(), message.size(), 0) == -1)
 		throw std::runtime_error("Error: send()");
 }
@@ -16,7 +32,7 @@ void 	R001(REP_ARG)
 	std::stringstream	output;
 
 	output.str("");
-	output << "001 " << name << " :Welcome " << name << " to the Internet Chat Relay!";
+	output << "001 " << name << " :Welcome to the " << "networkname" << " Network, " << "<nick>[!<user>@<host>]";
 	send_to_client(output.str(), fd);
 }
 
@@ -25,7 +41,7 @@ void	R324(REP_ARG, const std::string &channel, const std::string &mode, const st
 	std::stringstream	output;
 
 	output.str("");
-	output << "324 " << name << " " << channel << " " << mode << " " << mode_param;
+	output << "324 " << name << " " << channel << " " << mode << " " << mode_param << "...";
 	send_to_client(output.str(), fd);
 }
 
@@ -184,7 +200,7 @@ void	E421(REP_ARG, const std::string &cmd)
 	std::stringstream	output;
 
 	output.str("");
-	output << "461 " << name << " " << cmd << " :Unknown command";
+	output << "421 " << name << " " << cmd << " :Unknown command";
 	send_to_client(output.str(), fd);
 }
 
@@ -206,21 +222,21 @@ void	E431(REP_ARG)
 	send_to_client(output.str(), fd);
 }
 
-void	E432(REP_ARG, const std::string &bad_name)
+void	E432(REP_ARG, const std::string &nick)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << "432 " << name << " " << bad_name << " :Erroneous nickname";
+	output << "432 " << name << " " << nick << " :Erroneous nickname";
 	send_to_client(output.str(), fd);
 }
 
-void	E433(REP_ARG, const std::string &bad_name)
+void	E433(REP_ARG, const std::string &nick)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << "433 " << name << " " << bad_name << " :Nickname is already in use";
+	output << "433 " << name << " " << nick << " :Nickname is already in use";
 	send_to_client(output.str(), fd);
 }
 

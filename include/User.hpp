@@ -8,9 +8,9 @@ class Server;
 class	User
 {
 	private:
-		int	_fd;
+		int		_fd;
 		bool	_logged_in;
-		std::string _pass;
+		bool	_pass;
 		std::string _nick;
 		std::string	_username;
 		std::string	_message;
@@ -26,18 +26,17 @@ class	User
 
 		void	setFd( int fd );
 		void	setLoggedIn( bool logged );
-		void	setPass( std::string str );
+		void	setPass( bool pass_status );
 		void	setNick( std::string str );
 		void	setUsername( std::string str );
 		void	setMessage( std::string str );
 
 		int	getFd( void ) const;
 		bool	getLoggedIn( void ) const;
-		std::string	getPass( void ) const;
+		bool	getPass( void ) const;
 		std::string	getNick( void ) const;
 		std::string	getUsername( void ) const;
 		std::string	getMessage( void ) const;
-		char	getLastChar( void ) const;
 		std::deque<std::string>	getTokens( void ) const;
 		
 		////////////////parsing

@@ -1,7 +1,5 @@
 Server:
 - Remplacer std::vector en std::deque pour fds
-- Enlever les users qui se sont déconnectés de la liste de users
-- Fix l'erreur de bind() (?)
 - Faire les retours d'erreur
 
 User:
