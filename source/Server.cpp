@@ -225,6 +225,7 @@ void    Server::parseMsg(User *current_user, std::string message)
     while (message.find("\r\n") != std::string::npos)
     {
         current_user->tokenizeMessage(message);
+        //std::cout << current_user->getMessage() << std::endl;
         //current_user->displayTokens();
         message = message.substr(message.find("\r\n") + 2, message.length());
         execute(current_user);

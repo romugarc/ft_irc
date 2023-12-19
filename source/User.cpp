@@ -106,6 +106,14 @@ std::deque<std::string>	User::getTokens( void ) const
 
 ////////////////////////functions////////////////////////
 
+static int checkWhitespace(char c)
+{
+	if (c <= ' ' && c != '\n' && c != '\r')
+		return 1;
+	else
+		return 0;
+}
+
 void	User::tokenizeMessage(std::string message)
 {
 	if (this->_tokens.size() > 0)
@@ -114,7 +122,7 @@ void	User::tokenizeMessage(std::string message)
 	for (size_t i = 0; i < message.find("\r\n"); i++)
 	{
 		j = i;
-		while (message[j] == ' ' && message[j] != '\0')
+		while (checkWhitespace(message[j]) == 1 && message[j] != '\0')
 			j++;
 		i = j;
 		if (message[i] == ':')
@@ -124,7 +132,7 @@ void	User::tokenizeMessage(std::string message)
 		}
 		else
 		{
-			while (message[j] != ' ' && j < message.find("\r\n") && message[j] != '\0')
+			while (checkWhitespace(message[j]) == 0 && j < message.find("\r\n") && message[j] != '\0')
 				j++;
 		}
 		if (j - i > 0)

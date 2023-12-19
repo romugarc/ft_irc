@@ -22,7 +22,7 @@ static bool isAlreadyUsed(Server *server, int user_fd, std::string nick)
     const std::deque<User *> users = server->getUsers();
     for (std::deque<User *>::const_iterator it = users.begin(); it != users.end(); it++)
     {
-        if ((*it)->getFd() != user_fd && (*it)->getNick() == nick)
+        if ((*it)->getFd() != user_fd && (*it)->getNick() == nick) //gerer les majuscules avec un toupper
             return (true);
     }
     return (false);
