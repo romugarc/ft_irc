@@ -52,7 +52,6 @@ void	kick(Server *server, User *user, std::deque<std::string> tokens)
 				RKICK((*it)->getFd(), server->getHost(), user->getNick(), tokens[1], tokens[2], tokens[3]);
 			else
 				RKICK((*it)->getFd(), server->getHost(), user->getNick(), tokens[1], tokens[2], "");
-			std::cout << (*it)->getFd() << std::endl;
 		}
 		channel->delOperator(target->getFd());
 		channel->delUser(target->getFd());

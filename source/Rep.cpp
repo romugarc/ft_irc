@@ -48,7 +48,6 @@ void	RKICK(REP_ARG, const std::string &channel, const std::string &nick, const s
 	else
 		output << ":" << client << " KICK " << channel << " " << nick << " :No comment";
 	send_to_client(output.str(), fd);
-	std::cout << fd << std::endl;
 }
 
 void	RMODE(REP_ARG, const std::string &target, const char operation, const char mode)
