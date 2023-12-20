@@ -19,7 +19,7 @@ Channel &Channel::operator=( Channel const &rhs )
 	return *this;
 }
 
-////////////////////////setters////////////////////////
+////////////////////////channel operations////////////////////////
 
 void	Channel::addUser( User *new_user )
 {
@@ -63,6 +63,16 @@ User *Channel::findUser( int fd )
     return (NULL);
 }
 
+User *Channel::findUser(std::string nick)
+{
+    for (size_t i = 0; i < _userlist.size(); i++)
+    {
+        if (!nick.compare(_userlist[i]->getNick()))
+            return (_userlist[i]);
+    }
+    return (NULL);
+}
+
 void	Channel::addOperator( User *new_op )
 {
 	int	is_present = 0;
@@ -100,6 +110,8 @@ User *Channel::findOperator( int fd )
     }
     return (NULL);
 }
+
+////////////////////////setters////////////////////////
 
 void	Channel::setName( std::string name )
 {

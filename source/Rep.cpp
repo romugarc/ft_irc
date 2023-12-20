@@ -37,6 +37,20 @@ void	RJOIN(REP_ARG, const std::string &channel)
 	send_to_client(output.str(), fd);
 }
 
+void	RKICK(REP_ARG, const std::string &channel, const std::string &nick, const std::string &comment)
+{
+	(void)host;
+	std::stringstream	output;
+
+	output.str("");
+	if (comment.size() > 0)
+		output << ":" << client << " KICK " << channel << " " << nick << " :" << comment;
+	else
+		output << ":" << client << " KICK " << channel << " " << nick << " :No comment";
+	send_to_client(output.str(), fd);
+	std::cout << fd << std::endl;
+}
+
 void	RMODE(REP_ARG, const std::string &target, const char operation, const char mode)
 {
 	(void)host;

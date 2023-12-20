@@ -35,6 +35,7 @@ class	Channel
 		void	addUser( User *new_user );
 		void	delUser( int user_fd );
 		User	*findUser( int fd );
+		User	*findUser( std::string nick );
 		void	addOperator( User *new_op );
 		void	delOperator( int user_fd );
 		User	*findOperator( int fd );

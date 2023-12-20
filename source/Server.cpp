@@ -204,6 +204,8 @@ void Server::deleteUser(int user_fd)
     {
         (*chan)->delUser(user_fd);
         (*chan)->delOperator(user_fd);
+        if ((*chan)->getNbUser() < 1)
+            _channels.erase(chan);
     }
 }
 
@@ -300,6 +302,18 @@ void    Server::createChannel( User *user_creator, std::string name )
     _channels.push_back(newchannel);
 }
 
+void    Server::deleteChannel( std::string channel_name )
+{
+    for (std::deque<Channel*>::iterator it = _channels.begin(); it < _channels.end(); it++)
+    {
+        if ((*it)->getName() == channel_name)
+        {
+            _channels.erase(it);
+            break;
+        }
+    }
+}
+
 Channel *Server::findChannel(std::string name)
 {
     for (size_t i = 0; i < _channels.size(); i++)
@@ -314,7 +328,7 @@ Channel *Server::findChannel(std::string name)
 
 void	Server::execute( User *current_user )
 {
-	std::string	commands[] = {"PASS", "NICK", "USER", "JOIN", "MODE"}; //, "KICK", "INVITE", "TOPIC", "MODE"}; //ajouter fonctions au jur et a mesure
+	std::string	commands[] = {"PASS", "NICK", "USER", "JOIN", "MODE", "KICK"}; //, "INVITE", "TOPIC", "MODE"}; //ajouter fonctions au jur et a mesure
 	int	i = 0;
 
 	while (i < 10)
@@ -341,6 +355,8 @@ void	Server::execute( User *current_user )
 		case 4:
 			mode(this, current_user, current_user->getTokens());
 			break;
+        case 5:
+            kick(this, current_user, current_user->getTokens());
 		default:
 			//throw exception?
 			break;

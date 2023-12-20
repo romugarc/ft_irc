@@ -9,7 +9,8 @@ SRCS	=	main.cpp			\
 			source/commands/nick.cpp	\
 			source/commands/user.cpp	\
 			source/commands/join.cpp	\
-			source/commands/mode.cpp
+			source/commands/mode.cpp	\
+			source/commands/kick.cpp
 
 OBJS	=	${SRCS:.cpp=.o}
 
@@ -18,8 +19,7 @@ DIR_INC	=	include
 CC		=	c++
 RM		=	rm -f
 
-CFLAGS	=	-Wall -Wextra -Werror -Wconversion -I$(DIR_INC) -std=c++98 -fsanitize=address
-
+CFLAGS	=	-Wall -Wextra -Werror -Wconversion -I$(DIR_INC) -std=c++98
 all:		${NAME}
 
 %.o : %.cpp 	${HEADER_FILES}

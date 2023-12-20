@@ -48,6 +48,7 @@ class Server
 
         void createChannel(User *user_creator, std::string name, std::string key);
         void createChannel(User *user_creator, std::string name);
+        void deleteChannel( std::string channel_name );
         Channel *findChannel(std::string name);
 
 		void execute( User *current_user );
