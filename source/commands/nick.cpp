@@ -17,12 +17,19 @@ static bool invalidCharacters(std::string str)
     return (false);
 }
 
+static std::string str_toupper(std::string s)
+{
+    for (unsigned int i = 0; i < s.size(); i++)
+        s[i] = (char)std::toupper(s[i]);
+    return (s);
+}
+
 static bool isAlreadyUsed(Server *server, int user_fd, std::string nick)
 {
     const std::deque<User *> users = server->getUsers();
     for (std::deque<User *>::const_iterator it = users.begin(); it != users.end(); it++)
     {
-        if ((*it)->getFd() != user_fd && (*it)->getNick() == nick) //gerer les majuscules avec un toupper
+        if ((*it)->getFd() != user_fd && str_toupper((*it)->getNick()) == str_toupper(nick))
             return (true);
     }
     return (false);
