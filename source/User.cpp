@@ -1,9 +1,11 @@
 #include "User.hpp"
 
-User::User( void ) : _logged_in(false)
-{}
+User::User( void ) : _logged_in(false), _nb_chan_limit(0)
+{
+	_modes = "wx";
+}
 
-User::User( User const &src ) : _logged_in(src.getLoggedIn())
+User::User( User const &src ) : _logged_in(src.getLoggedIn()), _nb_chan_limit(src.getNbChanLimit())
 {
 	*this = src;
 }
@@ -27,9 +29,13 @@ User &User::operator=( User const &rhs )
 }
 
 ////////////////////////setters////////////////////////
+void	User::setHostName( std::string hostname )
+{
+	this->_hostname = hostname;
+}
+
 void	User::setFd( int fd )
 {
-	//parse str for requirements
 	this->_fd = fd;
 }
 
@@ -40,19 +46,16 @@ void	User::setLoggedIn( bool logged )
 
 void	User::setPass( bool pass_status )
 {
-	//parse str for requirements
 	this->_pass = pass_status;
 }
 
 void	User::setNick( std::string str )
 {
-	//parse str for requirements
 	this->_nick = str;
 }
 
 void	User::setUsername( std::string str )
 {
-	//parse str for requirements
 	this->_username = str;
 }
 
@@ -67,7 +70,22 @@ void	User::setMessage( std::string str )
 		this->_message = str;
 }
 
+void	User::setNbChanLimit( int limit )
+{
+	this->_nb_chan_limit = limit;
+}
+
+void	User::setNbChan( int nb_chan )
+{
+	this->_nb_chan = nb_chan;
+}
+
 ////////////////////////getters////////////////////////
+
+std::string	User::getHostName( void ) const
+{
+	return (this->_hostname);
+}
 
 int	User::getFd( void ) const
 {
@@ -102,6 +120,21 @@ std::string	User::getMessage( void ) const
 std::deque<std::string>	User::getTokens( void ) const
 {
 	return (this->_tokens);
+}
+
+int	User::getNbChanLimit( void ) const
+{
+	return (this->_nb_chan_limit);
+}
+
+int	User::getNbChan( void ) const
+{
+	return (this->_nb_chan);
+}
+
+std::string	User::getModes( void ) const
+{
+	return (this->_modes);
 }
 
 ////////////////////////functions////////////////////////
@@ -141,7 +174,7 @@ void	User::tokenizeMessage(std::string message)
 	}
 }
 
-void	User::displayTokens( void ) const //fonction test
+void	User::displayTokens( void ) const
 {
 	std::cout << "nb tokens: " << getTokens().size() << std::endl;
 	for (size_t i = 0; i < this->_tokens.size(); i++)

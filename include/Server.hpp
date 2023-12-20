@@ -9,6 +9,7 @@ class Channel;
 class Server
 {
     private:
+        std::string _host;
         std::string _port;
         std::string _password;
         int _socket_fd;
@@ -24,10 +25,12 @@ class Server
 
         Server	&operator=(const Server &src);
 
+        const std::string &getHost(void) const;
         const std::string &getPort(void) const;
         const std::string &getPassword(void) const;
         const std::deque<User *> &getUsers(void) const;
         const std::deque<Channel *> &getChannels(void) const;
+    
         void    displayMessage(std::string message) const;
         void    displayAllUsers(void) const;
         void    displayAllChannels(void) const;
@@ -41,6 +44,7 @@ class Server
         void userMsg(int user_fd);
         void parseMsg(User *current_user, std::string message);
         User *findUser(int fd);
+        User *findUser(std::string nick);
 
         void createChannel(User *user_creator, std::string name, std::string key);
         void createChannel(User *user_creator, std::string name);

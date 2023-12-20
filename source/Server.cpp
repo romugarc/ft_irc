@@ -14,6 +14,11 @@ Server::~Server(void)
     }
 }
 
+const std::string &Server::getHost(void) const
+{
+    return (_host);
+}
+
 const std::string &Server::getPort(void) const
 {
     return (_port);
@@ -81,7 +86,14 @@ void    Server::createSocket(void)
         freeaddrinfo(servinfo);
         throw   std::runtime_error("Error: listen()");
     }
+    char hostname[NI_MAXHOST];
+	if (getnameinfo(servinfo->ai_addr, servinfo->ai_addrlen, hostname, sizeof(hostname), NULL, 0, NI_NUMERICHOST))
+    {
+        freeaddrinfo(servinfo);
+		throw std::runtime_error("Error: getnameinfo()");
+    }
     freeaddrinfo(servinfo);
+    _host = hostname;
     std::cout << "Server Socket fd : " << _socket_fd << std::endl;
 }
 
@@ -107,7 +119,6 @@ void    Server::loop(void)
         if (_fds[0].revents & POLLIN) //si un event POLLIN sur le serv
         {
             createUser();
-            //displayAllUsers();
         }
         for (std::vector<struct pollfd>::iterator i_pollfd = _fds.begin() + 1; i_pollfd < _fds.end(); i_pollfd++)
         {
@@ -115,6 +126,7 @@ void    Server::loop(void)
             {
                 userMsg(i_pollfd->fd);
                 displayAllUsers();
+                displayAllChannels();
             }
             if (i_pollfd->revents & POLLOUT) //si un event POLLOUT sur un user
             {
@@ -157,8 +169,12 @@ void    Server::createUser(void)
     std::cout << "User Connection fd " << _fds.back().fd << std::endl;
 
     User    *newuser = new User;
+    char hostname[NI_MAXHOST];
 
     _users.push_back(newuser);
+	if (getnameinfo((struct sockaddr *)(&sock_new_user), sock_new_user_len, hostname, sizeof(hostname), NULL, 0, NI_NUMERICHOST))
+		throw std::runtime_error("Error: getnameinfo()");
+    _users.back()->setHostName(hostname);
     _users.back()->setFd(_fds.back().fd);
 }
 
@@ -175,15 +191,19 @@ void Server::deleteUser(int user_fd)
         }
     }
     
-    size_t i = 0;
     for (std::deque<User*>::iterator it = _users.begin(); it < _users.end(); it++)
     {
-        if (_users[i]->getFd() == user_fd)
+        if ((*it)->getFd() == user_fd)
         {
             _users.erase(it);
             break;
         }
-        i++;
+    }
+
+    for (std::deque<Channel*>::iterator chan = _channels.begin(); chan < _channels.end(); chan++)
+    {
+        (*chan)->delUser(user_fd);
+        (*chan)->delOperator(user_fd);
     }
 }
 
@@ -225,15 +245,18 @@ void    Server::parseMsg(User *current_user, std::string message)
     while (message.find("\r\n") != std::string::npos)
     {
         current_user->tokenizeMessage(message);
-        //std::cout << current_user->getMessage() << std::endl;
-        //current_user->displayTokens();
         message = message.substr(message.find("\r\n") + 2, message.length());
         execute(current_user);
     }
 
     if (current_user->getLoggedIn() == false)
+    {
         if (current_user->getPass() == true && !current_user->getUsername().empty() && !current_user->getNick().empty())
+        {
             current_user->setLoggedIn(true);
+            R001(current_user->getFd(), this->_host, current_user->getNick(), current_user->getUsername(), current_user->getHostName());
+        }
+    }
 }
 
 User *Server::findUser( int fd )
@@ -246,13 +269,24 @@ User *Server::findUser( int fd )
     return (NULL); //jamais null dans userMsg
 }
 
+User *Server::findUser(std::string nick)
+{
+    for (size_t i = 0; i < _users.size(); i++)
+    {
+        if (!nick.compare(_users[i]->getNick()))
+            return (_users[i]);
+    }
+    return (NULL);
+}
+
 void    Server::createChannel( User *user_creator, std::string name, std::string key )
 {
     Channel    *newchannel = new Channel;
 
-    newchannel->setOperator(user_creator);
-    newchannel->setChannelName(name);
-    newchannel->setChannelKey(key);
+    newchannel->addUser(user_creator);
+    newchannel->addOperator(user_creator);
+    newchannel->setName(name);
+    newchannel->setKey(key);
     _channels.push_back(newchannel);
 }
 
@@ -260,8 +294,9 @@ void    Server::createChannel( User *user_creator, std::string name )
 {
     Channel    *newchannel = new Channel;
 
-    newchannel->setOperator(user_creator);
-    newchannel->setChannelName(name);
+    newchannel->addUser(user_creator);
+    newchannel->addOperator(user_creator);
+    newchannel->setName(name);
     _channels.push_back(newchannel);
 }
 
@@ -269,7 +304,7 @@ Channel *Server::findChannel(std::string name)
 {
     for (size_t i = 0; i < _channels.size(); i++)
     {
-        if (!name.compare(_channels[i]->getChannelName()))
+        if (!name.compare(_channels[i]->getName()))
             return (_channels[i]);
     }
     return (NULL);
@@ -279,11 +314,15 @@ Channel *Server::findChannel(std::string name)
 
 void	Server::execute( User *current_user )
 {
-	std::string	commands[4] = {"PASS", "NICK", "USER", "JOIN"}; //, "KICK", "INVITE", "TOPIC", "MODE"}; //ajouter fonctions au jur et a mesure
-	int	i = -1;
+	std::string	commands[] = {"PASS", "NICK", "USER", "JOIN", "MODE"}; //, "KICK", "INVITE", "TOPIC", "MODE"}; //ajouter fonctions au jur et a mesure
+	int	i = 0;
 
-	if (current_user->getTokens().size() > 0)
-		while (current_user->getTokens()[0] != commands[i] && i++ < 12);
+	while (i < 10)
+	{
+		if (commands[i] == current_user->getTokens()[0])
+			break;
+		i++;
+	}
 
 	switch (i) //agrandir ce switch au fur et a mesure
 	{
@@ -298,6 +337,9 @@ void	Server::execute( User *current_user )
 			break;
 		case 3:
 			join(this, current_user, current_user->getTokens());
+			break;
+		case 4:
+			mode(this, current_user, current_user->getTokens());
 			break;
 		default:
 			//throw exception?
@@ -324,11 +366,12 @@ void Server::displayMessage(std::string message) const
 
 void    Server::displayAllUsers(void) const //fonction de test modifiable a volonte
 {
-    std::cout << "nº\tFD\t\tNickname\tUsername\tPWD Status\tStatus\t\tLast Message" << std::endl;
+    std::cout << "###################################################USERS###################################################" << std::endl;
+    std::cout << "FD\t\tHostname\tNickname\tUsername\tPWD Status\tStatus\t\tLast Message" << std::endl;
     for (size_t i = 0; i < _users.size(); i++)
     {
-        std::cout << i << "\t";
         std::cout << _users[i]->getFd() << "\t\t";
+        std::cout << _users[i]->getHostName() << "\t";
         if (_users[i]->getNick().length() > 12)
             std::cout << _users[i]->getNick().substr(0, 12) << "...\t";
         else if (_users[i]->getNick().length() > 7)
@@ -348,10 +391,20 @@ void    Server::displayAllUsers(void) const //fonction de test modifiable a volo
     }
 }
 
-void    Server::displayAllChannels(void) const //fonction de test modifiable a volonte
+void    Server::displayAllChannels(void) const
 {
+    std::cout << "###################################################CHANNELS###################################################" << std::endl;
+	std::cout << "Name\t\tKey\t\tTopic\t\tModes\t\tnb_user_limit\tnb_user\t\tUserlist" << std::endl;
     for (size_t i = 0; i < _channels.size(); i++)
     {
-        std::cout << i << "channel: " << _channels[i]->getChannelName() << std::endl;
+        std::cout << _channels[i]->getName() << "\t\t";
+		std::cout << _channels[i]->getKey() << "\t\t";
+		std::cout << _channels[i]->getTopic() << "\t\t";
+		std::cout << _channels[i]->getModes() << "\t\t";
+		std::cout << _channels[i]->getNbUserLimit() << "\t\t";
+		std::cout << _channels[i]->getNbUser() << "\t\t";
+		for (size_t j = 0; j < _channels[i]->getUserList().size(); j++)
+			std::cout << _channels[i]->getUserList()[j]->getNick() << ", ";
+		std::cout << std::endl;
     }
 }

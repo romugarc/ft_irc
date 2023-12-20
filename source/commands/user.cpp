@@ -7,9 +7,9 @@ void	user(Server *server, User *user, std::deque<std::string> tokens)
 {
   (void)server;
   if (tokens.size() <= 1 || tokens[1].empty()) //if not enough args
-		E461(user->getFd(), user->getNick(), "USER");
+		E461(user->getFd(), server->getHost(), user->getNick(), "USER");
 	else if (user->getLoggedIn() == true) //if registration already done
-		E462(user->getFd(), user->getNick());
+		E462(user->getFd(), server->getHost(), user->getNick());
   else
   {
     //reussite

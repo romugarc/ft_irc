@@ -1,6 +1,6 @@
 #include "Rep.hpp"
 
-//REP_ARG == int const &fd, const std::string &name
+//REP_ARG == int const &fd, const std::string &host, const std::string &client
 
 static void displayReply(std::string message)
 {
@@ -27,21 +27,51 @@ void	send_to_client(std::string msg, int const &fd)
 		throw std::runtime_error("Error: send()");
 }
 
-void 	R001(REP_ARG)
+void	RJOIN(REP_ARG, const std::string &channel)
 {
+	(void)host;
 	std::stringstream	output;
 
 	output.str("");
-	output << "001 " << name << " :Welcome to the " << "networkname" << " Network, " << "<nick>[!<user>@<host>]";
+	output << ":" << client << " JOIN " << channel;
 	send_to_client(output.str(), fd);
 }
 
-void	R324(REP_ARG, const std::string &channel, const std::string &mode, const std::string &mode_param)
+void	RMODE(REP_ARG, const std::string &target, const char operation, const char mode)
+{
+	(void)host;
+	std::stringstream	output;
+
+	output.str("");
+	output << ":" << client << " MODE " << target << " " << operation << mode;
+	send_to_client(output.str(), fd);
+}
+
+void 	R001(REP_ARG, const std::string &user, const std::string &userhost)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << "324 " << name << " " << channel << " " << mode << " " << mode_param << "...";
+	output << ":" << host << " 001 " << client << " :Welcome to the IRC 42 Network, " << client << "!" << user << "@" << userhost;
+	send_to_client(output.str(), fd);
+}
+
+void	R221(REP_ARG, const std::string &user_modes)
+{
+	std::stringstream	output;
+
+	output.str("");
+	output << ":" << host << " 221 " << client << " +" << user_modes;
+	send_to_client(output.str(), fd);
+}
+
+
+void	R324(REP_ARG, const std::string &channel, const std::string &mode)
+{
+	std::stringstream	output;
+
+	output.str("");
+	output << ":" << host << " 324 " << client << " " << channel << " +" << mode;
 	send_to_client(output.str(), fd);
 }
 
@@ -50,7 +80,7 @@ void	R331(REP_ARG, const std::string &channel)
 	std::stringstream	output;
 
 	output.str("");
-	output << "331 " << name << " " << channel << " :No topic is set";
+	output << ":" << host << " 331 " << client << " " << channel << " :No topic is set";
 	send_to_client(output.str(), fd);
 }
 
@@ -59,7 +89,7 @@ void	R332(REP_ARG, const std::string &channel, const std::string &topic)
 	std::stringstream	output;
 
 	output.str("");
-	output << "332 " << name << " " << channel << " :" << topic;
+	output << ":" << host << " 332 " << client << " " << channel << " :" << topic;
 	send_to_client(output.str(), fd);
 }
 
@@ -68,16 +98,25 @@ void	R341(REP_ARG, const std::string &channel, const std::string &input_name)
 	std::stringstream	output;
 
 	output.str("");
-	output << "341 " << name << " " << channel << " " << input_name;
+	output << ":" << host << " 341 " << client << " " << channel << " " << input_name;
 	send_to_client(output.str(), fd);
 }
 
-void	R353(REP_ARG, const char &symbol, const std::string &channel, const std::string &members)
+// void	R352(REP_ARG, const std::string &channel, const std::string &username, const std::string &nick)
+// {
+// 	std::stringstream	output;
+
+// 	output.str("");
+// 	output << ":" << host << " 352 " << client << " " << channel << " :" << username << " " << nick;
+// 	send_to_client(output.str(), fd);
+// }
+
+void	R353(REP_ARG, const char &symbol, const std::string &channel, const std::string &prefix, const std::string &nick)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << "353 " << name << " " << symbol << " " << channel << " :" << members;
+	output << ":" << host << " 353 " << client << " " << symbol << " " << channel << " :" << prefix << nick;
 	send_to_client(output.str(), fd);
 }
 
@@ -86,7 +125,7 @@ void	R366(REP_ARG, const std::string &channel)
 	std::stringstream	output;
 
 	output.str("");
-	output << "366 " << name << " " << channel << " :End of /NAMES list";
+	output << ":" << host << " 366 " << client << " " << channel << " :End of /NAMES list";
 	send_to_client(output.str(), fd);
 }
 
@@ -95,7 +134,7 @@ void	R372(REP_ARG, const std::string &line)
 	std::stringstream	output;
 
 	output.str("");
-	output << "372 " << name << " : " << line;
+	output << ":" << host << " 372 " << client << " : " << line;
 	send_to_client(output.str(), fd);
 }
 
@@ -104,7 +143,7 @@ void	R375(REP_ARG)
 	std::stringstream	output;
 
 	output.str("");
-	output << "375 " << name << " :- ircserv Message of the day - ";
+	output << ":" << host << " 375 " << client << " :- ircserv Message of the day - ";
 	send_to_client(output.str(), fd);
 }
 
@@ -113,7 +152,7 @@ void	R376(REP_ARG)
 	std::stringstream	output;
 
 	output.str("");
-	output << "376 " << name << " :End of MOTD command";
+	output << ":" << host << " 376 " << client << " :End of MOTD command";
 	send_to_client(output.str(), fd);
 }
 
@@ -128,7 +167,7 @@ void	R391(REP_ARG)
 	time(&curr_time);
 	curr_tm = localtime(&curr_time);
 	strftime(date_string, 50, "%c", curr_tm);
-	output << "391 " << name << " ircserv :" << date_string;
+	output << ":" << host << " 391 " << client << " ircserv :" << date_string;
 	send_to_client(output.str(), fd);
 }
 
@@ -137,7 +176,7 @@ void	E401(REP_ARG, const std::string &input_name)
 	std::stringstream	output;
 
 	output.str("");
-	output << "401 " << name << " " << input_name << " :No such nick/channel";
+	output << ":" << host << " 401 " << client << " " << input_name << " :No such nick/channel";
 	send_to_client(output.str(), fd);
 }
 
@@ -146,7 +185,7 @@ void	E402(REP_ARG, const std::string &server)
 	std::stringstream	output;
 
 	output.str("");
-	output << "402 " << name << " " << server << " :No such server";
+	output << ":" << host << " 402 " << client << " " << server << " :No such server";
 	send_to_client(output.str(), fd);
 }
 
@@ -155,7 +194,7 @@ void 	E403(REP_ARG, const std::string &channel)
 	std::stringstream	output;
 
 	output.str("");
-	output << "403 " << name << " " << channel << " :No such channel";
+	output << ":" << host << " 403 " << client << " " << channel << " :No such channel";
 	send_to_client(output.str(), fd);
 }
 
@@ -164,7 +203,7 @@ void 	E404(REP_ARG, const std::string &channel)
 	std::stringstream	output;
 
 	output.str("");
-	output << "404 " << name << " " << channel << " :Cannot send to channel";
+	output << ":" << host << " 404 " << client << " " << channel << " :Cannot send to channel";
 	send_to_client(output.str(), fd);
 }
 
@@ -173,7 +212,7 @@ void	E405(REP_ARG, const std::string &channel)
 	std::stringstream	output;
 
 	output.str("");
-	output << "405 " << name << " " << channel <<  " :You have joined too many channels";	
+	output << ":" << host << " 405 " << client << " " << channel <<  " :You have joined too many channels";	
 	send_to_client(output.str(), fd);
 }
 
@@ -182,7 +221,7 @@ void	E411(REP_ARG, const std::string &cmd)
 	std::stringstream	output;
 
 	output.str("");
-	output << "411 " << name << " :No recipient given (" << cmd << ")";
+	output << ":" << host << " 411 " << client << " :No recipient given (" << cmd << ")";
 	send_to_client(output.str(), fd);
 }
 
@@ -191,7 +230,7 @@ void	E412(REP_ARG)
 	std::stringstream	output;
 
 	output.str("");
-	output << "412 " << name << " :No text to send";
+	output << ":" << host << " 412 " << client << " :No text to send";
 	send_to_client(output.str(), fd);
 }
 
@@ -200,7 +239,7 @@ void	E421(REP_ARG, const std::string &cmd)
 	std::stringstream	output;
 
 	output.str("");
-	output << "421 " << name << " " << cmd << " :Unknown command";
+	output << ":" << host << " 421 " << client << " " << cmd << " :Unknown command";
 	send_to_client(output.str(), fd);
 }
 
@@ -209,7 +248,7 @@ void	E422(REP_ARG)
 	std::stringstream	output;
 
 	output.str("");
-	output << "422 " << name << " :MOTD File is missing";
+	output << ":" << host << " 422 " << client << " :MOTD File is missing";
 	send_to_client(output.str(), fd);
 }
 
@@ -218,7 +257,7 @@ void	E431(REP_ARG)
 	std::stringstream	output;
 
 	output.str("");
-	output << "431 " << name << " :No nickname given";
+	output << ":" << host << " 431 " << client << " :No nickname given";
 	send_to_client(output.str(), fd);
 }
 
@@ -227,7 +266,7 @@ void	E432(REP_ARG, const std::string &nick)
 	std::stringstream	output;
 
 	output.str("");
-	output << "432 " << name << " " << nick << " :Erroneous nickname";
+	output << ":" << host << " 432 " << client << " " << nick << " :Erroneous nickname";
 	send_to_client(output.str(), fd);
 }
 
@@ -236,7 +275,7 @@ void	E433(REP_ARG, const std::string &nick)
 	std::stringstream	output;
 
 	output.str("");
-	output << "433 " << name << " " << nick << " :Nickname is already in use";
+	output << ":" << host << " 433 " << client << " " << nick << " :Nickname is already in use";
 	send_to_client(output.str(), fd);
 }
 
@@ -245,7 +284,7 @@ void	E441(REP_ARG, const std::string &channel, const std::string &input_name)
 	std::stringstream	output;
 
 	output.str("");
-	output << "441 " << name << " " << input_name << " " << channel << " :They aren't on that channel";
+	output << ":" << host << " 441 " << client << " " << input_name << " " << channel << " :They aren't on that channel";
 	send_to_client(output.str(), fd);
 }
 
@@ -254,7 +293,7 @@ void	E442(REP_ARG, const std::string &channel)
 	std::stringstream	output;
 
 	output.str("");
-	output << "442 " << name << " " << channel << " :You're not on that channel";
+	output << ":" << host << " 442 " << client << " " << channel << " :You're not on that channel";
 	send_to_client(output.str(), fd);
 }
 
@@ -263,7 +302,7 @@ void	E443(REP_ARG, const std::string &channel, const std::string &input_name)
 	std::stringstream	output;
 
 	output.str("");
-	output << "443 " << name << " " << input_name << " " << channel << " :is already on channel";
+	output << ":" << host << " 443 " << client << " " << input_name << " " << channel << " :is already on channel";
 	send_to_client(output.str(), fd);
 }
 
@@ -272,7 +311,7 @@ void	E461(REP_ARG, const std::string &cmd)
 	std::stringstream	output;
 
 	output.str("");
-	output << "461 " << name << " " << cmd << " :Not enough parameters";
+	output << ":" << host << " 461 " << client << " " << cmd << " :Not enough parameters";
 	send_to_client(output.str(), fd);
 }
 
@@ -281,7 +320,7 @@ void	E462(REP_ARG)
 	std::stringstream	output;
 
 	output.str("");
-	output << "462 " << name << " :Unauthorized command (already registered)";
+	output << ":" << host << " 462 " << client << " :Unauthorized command (already registered)";
 	send_to_client(output.str(), fd);
 }
 
@@ -290,7 +329,7 @@ void	E464(REP_ARG)
 	std::stringstream	output;
 
 	output.str("");
-	output << "464 " << name << " :Password incorrect";
+	output << ":" << host << " 464 " << client << " :Password incorrect";
 	send_to_client(output.str(), fd);
 }
 
@@ -299,7 +338,7 @@ void	E471(REP_ARG, const std::string &channel)
 	std::stringstream	output;
 
 	output.str("");
-	output << "471 " << name << " " << channel << " :Cannot join channel (+l)";
+	output << ":" << host << " 471 " << client << " " << channel << " :Cannot join channel (+l)";
 	send_to_client(output.str(), fd);
 }
 
@@ -308,7 +347,7 @@ void 	E472(REP_ARG, const std::string &channel, const char &mode)
 	std::stringstream	output;
 
 	output.str("");
-	output << "472 " << name << " " << mode << " :is unknown mode char to me for "
+	output << ":" << host << " 472 " << client << " " << mode << " :is unknown mode char to me for "
 	<< channel;
 	send_to_client(output.str(), fd);
 }
@@ -318,7 +357,7 @@ void	E473(REP_ARG, const std::string &channel)
 	std::stringstream	output;
 
 	output.str("");
-	output << "473 " << name << " " << channel << " :Cannot join channel (+i)";
+	output << ":" << host << " 473 " << client << " " << channel << " :Cannot join channel (+i)";
 	send_to_client(output.str(), fd);
 }
 
@@ -327,7 +366,7 @@ void	E475(REP_ARG, const std::string &channel)
 	std::stringstream	output;
 
 	output.str("");
-	output << "475 " << name << " " << channel << " :Cannot join channel (+k)";
+	output << ":" << host << " 475 " << client << " " << channel << " :Cannot join channel (+k)";
 	send_to_client(output.str(), fd);
 }
 
@@ -336,16 +375,25 @@ void	E482(REP_ARG, const std::string &channel)
 	std::stringstream	output;
 
 	output.str("");
-	output << "482 " << name << " " << channel << " :You're not channel operator";
+	output << ":" << host << " 482 " << client << " " << channel << " :You're not channel operator";
 	send_to_client(output.str(), fd);
 }
 
-void	E696(REP_ARG, const std::string &channel, const std::string &mode, const std::string &password)
+void	E501(REP_ARG)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << "696 " << name << " " << channel << " " << mode << " " << password << " :limit must only contained digit";
+	output << ":" << host << " 501 " << client << " :Unknown MODE flag";
+	send_to_client(output.str(), fd);
+}
+
+void	E502(REP_ARG)
+{
+	std::stringstream	output;
+
+	output.str("");
+	output << ":" << host << " 502 " << client << " :Cant change mode for other users";
 	send_to_client(output.str(), fd);
 }
 
@@ -354,6 +402,15 @@ void	E525(REP_ARG, const std::string &channel)
 	std::stringstream	output;
 
 	output.str("");
-	output << "525 " << name << " " << channel << " :Key is not well-formed";
+	output << ":" << host << " 525 " << client << " " << channel << " :Key is not well-formed";
+	send_to_client(output.str(), fd);
+}
+
+void	E696(REP_ARG, const std::string &channel, const std::string &mode, const std::string &password)
+{
+	std::stringstream	output;
+
+	output.str("");
+	output << ":" << host << " 696 " << client << " " << channel << " " << mode << " " << password << " :limit must only contained digit";
 	send_to_client(output.str(), fd);
 }

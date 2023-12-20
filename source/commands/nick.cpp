@@ -34,11 +34,11 @@ void	nick(Server *server, User *user, std::deque<std::string> tokens)
     if (tokens.size() > 1)
         nick = tokens[1];
     if (tokens.size() <= 1 || nick.empty()) //if not enough args
-        E431(user->getFd(), user->getNick());
+        E431(user->getFd(), server->getHost(), user->getNick());
     else if (invalidCharacters(nick)) //if invalid character used
-        E432(user->getFd(), user->getNick(), nick);
+        E432(user->getFd(), server->getHost(), user->getNick(), nick);
     else if (isAlreadyUsed(server, user->getFd(), nick)) //if nickname already exist
-        E432(user->getFd(), user->getNick(), nick);
+        E432(user->getFd(), server->getHost(), user->getNick(), nick);
     else
     {
         //reussite

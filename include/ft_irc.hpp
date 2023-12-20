@@ -5,7 +5,7 @@
 #include <string>
 #include <sys/socket.h> //socket(), bind(), listen()
 #include <sys/types.h>
-#include <netdb.h> //struct addrinfo
+#include <netdb.h> //struct addrinfo   getnameinfo
 #include <unistd.h> //close()
 #include <poll.h> //poll(), struct pollfd
 #include <vector>
