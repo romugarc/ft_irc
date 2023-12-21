@@ -37,6 +37,19 @@ void	RJOIN(REP_ARG, const std::string &channel)
 	send_to_client(output.str(), fd);
 }
 
+void	RPART(REP_ARG, const std::string &channel, const std::string &comment)
+{
+	(void)host;
+	std::stringstream	output;
+
+	output.str("");
+	if (comment.size() > 0)
+		output << ":" << client << " PART " << channel << " " << " :" << comment;
+	else
+		output << ":" << client << " PART " << channel << " " << " :No comment";
+	send_to_client(output.str(), fd);
+}
+
 void	RKICK(REP_ARG, const std::string &channel, const std::string &nick, const std::string &comment)
 {
 	(void)host;

@@ -17,5 +17,6 @@ void	quit(Server *server, User *user, std::deque<std::string> tokens);
 void	quit(Server *server, User *user);
 void	invite(Server *server, User *user, std::deque<std::string> tokens);
 void	topic(Server *server, User *user, std::deque<std::string> tokens);
+void	part(Server *server, User *user, std::deque<std::string> tokens);
 
 #endif
