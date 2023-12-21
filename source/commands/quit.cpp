@@ -11,7 +11,6 @@ void	quit(Server *server, User *user, std::deque<std::string> tokens)
 		else
 			RQUIT((*it)->getFd(), server->getHost(), user->getNick(), "");
 	}
-	std::cout << "1" << std::endl;
 	user->setQuit();
 }
 
@@ -24,6 +23,5 @@ void	quit(Server *server, User *user)
 		if ((*it)->getFd() != user->getFd())
 			RQUIT((*it)->getFd(), server->getHost(), user->getNick(), "Connection lost");
 	}
-	std::cout << "2" << std::endl;
 	user->setQuit();
 }

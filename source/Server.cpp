@@ -351,6 +351,10 @@ void	Server::execute( User *current_user )
 	std::string	commands[] = {"PASS", "NICK", "USER", "JOIN", "MODE", "KICK", "INVITE", "TOPIC", "QUIT"};
     int	i = 0;
 
+    if (current_user->getTokens().size() <= 0)
+    {
+        return;
+    }
 	while (current_user->getTokens()[0] != commands[i] && i++ < 9);
 
 	switch (i) //agrandir ce switch au fur et a mesure
