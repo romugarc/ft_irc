@@ -46,7 +46,6 @@ class Server
         User *findUser(int fd);
         User *findUser(std::string nick);
 
-        void createChannel(User *user_creator, std::string name, std::string key);
         void createChannel(User *user_creator, std::string name);
         void deleteChannel( std::string channel_name );
         Channel *findChannel(std::string name);

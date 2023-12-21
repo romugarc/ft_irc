@@ -202,15 +202,17 @@ void Server::deleteUser(int user_fd)
         }
     }
 
-    for (std::deque<Channel*>::iterator chan = _channels.begin(); chan < _channels.end(); chan++)
+    for (std::deque<Channel*>::iterator chan = _channels.begin(); chan < _channels.end();)
     {
         (*chan)->delUser(user_fd);
         (*chan)->delOperator(user_fd);
         if ((*chan)->getNbUser() < 1)
         {
             delete (*chan);
-            _channels.erase(chan);
-        } //tester si l'iterateur est coherent en creant plusieurs channels avec ce user en dernier puis en supprimant ce user
+            chan = _channels.erase(chan);
+        }
+        else
+            ++chan;
     }
     
     for (std::deque<User*>::iterator it = _users.begin(); it < _users.end(); it++)
@@ -300,17 +302,6 @@ User *Server::findUser(std::string nick)
     return (NULL);
 }
 
-void    Server::createChannel( User *user_creator, std::string name, std::string key )
-{
-    Channel    *newchannel = new Channel;
-
-    newchannel->addUser(user_creator);
-    newchannel->addOperator(user_creator);
-    newchannel->setName(name);
-    newchannel->setKey(key);
-    _channels.push_back(newchannel);
-}
-
 void    Server::createChannel( User *user_creator, std::string name )
 {
     Channel    *newchannel = new Channel;
@@ -348,14 +339,14 @@ Channel *Server::findChannel(std::string name)
 
 void	Server::execute( User *current_user )
 {
-	std::string	commands[] = {"PASS", "NICK", "USER", "JOIN", "MODE", "KICK", "INVITE", "TOPIC", "PRIVMSG", "QUIT"};
+	std::string	commands[] = {"PASS", "NICK", "USER", "JOIN", "MODE", "KICK", "INVITE", "TOPIC", "PRIVMSG", "PART", "QUIT"};
     int	i = 0;
 
     if (current_user->getTokens().size() <= 0)
     {
         return;
     }
-	while (current_user->getTokens()[0] != commands[i] && i++ < 9);
+	while (current_user->getTokens()[0] != commands[i] && i++ < 11);
 
 	switch (i) //agrandir ce switch au fur et a mesure
 	{
@@ -387,6 +378,9 @@ void	Server::execute( User *current_user )
             privmsg(this, current_user, current_user->getTokens());
             break;
         case 9:
+            part(this, current_user, current_user->getTokens());
+            break;
+        case 10:
             quit(this, current_user, current_user->getTokens());
             break;
 		default:

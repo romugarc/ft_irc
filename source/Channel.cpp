@@ -2,7 +2,7 @@
 
 Channel::Channel( void ) : _nb_user_limit(0), _nb_user(0)
 {
-	_modes = "";
+	_modes = "nt";
 }
 
 Channel::Channel( Channel const &src )

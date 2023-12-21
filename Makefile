@@ -14,7 +14,8 @@ SRCS	=	main.cpp			\
 			source/commands/invite.cpp	\
 			source/commands/topic.cpp	\
 			source/commands/privmsg.cpp	\
-			source/commands/quit.cpp
+			source/commands/quit.cpp	\
+			source/commands/part.cpp
 
 OBJS	=	${SRCS:.cpp=.o}
 
