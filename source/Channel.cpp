@@ -2,7 +2,7 @@
 
 Channel::Channel( void ) : _nb_user_limit(0), _nb_user(0)
 {
-	_modes = "k";
+	_modes = "";
 }
 
 Channel::Channel( Channel const &src )
@@ -25,9 +25,9 @@ void	Channel::addUser( User *new_user )
 {
 	int	is_present = 0;
 
-	for (size_t i = 0; i < this->_userlist.size(); i++)
+	for (size_t i = 0; i < _userlist.size(); i++)
 	{
-		if (new_user->getFd() == this->_userlist[i]->getFd())
+		if (new_user->getFd() == _userlist[i]->getFd())
 		{
 			is_present = 1;
 			break;
@@ -35,8 +35,8 @@ void	Channel::addUser( User *new_user )
 	}
 	if (is_present == 0)
 	{
-		this->_nb_user++;
-		this->_userlist.push_back(new_user);
+		_nb_user++;
+		_userlist.push_back(new_user);
 	}
 }
 
@@ -77,16 +77,16 @@ void	Channel::addOperator( User *new_op )
 {
 	int	is_present = 0;
 
-	for (size_t i = 0; i < this->_oplist.size(); i++)
+	for (size_t i = 0; i < _oplist.size(); i++)
 	{
-		if (new_op->getFd() == this->_oplist[i]->getFd())
+		if (new_op->getFd() == _oplist[i]->getFd())
 		{
 			is_present = 1;
 			break;
 		}
 	}
 	if (is_present == 0)
-		this->_oplist.push_back(new_op);
+		_oplist.push_back(new_op);
 }
 
 void	Channel::delOperator( int user_fd )
@@ -111,6 +111,44 @@ User *Channel::findOperator( int fd )
     return (NULL);
 }
 
+void	Channel::addInvited( User *new_inv )
+{
+	int	is_present = 0;
+
+	for (size_t i = 0; i < _invitedlist.size(); i++)
+	{
+		if (new_inv->getFd() == _invitedlist[i]->getFd())
+		{
+			is_present = 1;
+			break;
+		}
+	}
+	if (is_present == 0)
+		_invitedlist.push_back(new_inv);
+}
+
+void	Channel::delInvited( int user_fd )
+{
+    for (std::deque<User*>::iterator it = _invitedlist.begin(); it < _invitedlist.end(); it++)
+    {
+        if ((*it)->getFd() == user_fd)
+        {
+            _invitedlist.erase(it);
+            break;
+        }
+    }
+}
+
+User *Channel::findInvited( int fd )
+{
+    for (size_t i = 0; i < _invitedlist.size(); i++)
+    {
+        if (fd == _invitedlist[i]->getFd())
+            return (_invitedlist[i]);
+    }
+    return (NULL);
+}
+
 ////////////////////////setters////////////////////////
 
 void	Channel::setName( std::string name )
@@ -126,6 +164,19 @@ void	Channel::setKey( std::string key )
 void	Channel::setTopic( std::string topic )
 {
 	this->_topic = topic;
+}
+
+void	Channel::addMode( char mode )
+{
+	if (this->_modes.find(mode) != std::string::npos)
+		return;
+	this->_modes += mode;
+}
+
+void	Channel::removeMode( char mode )
+{
+	while (this->_modes.find(mode) != std::string::npos)
+		this->_modes.erase(this->_modes.find(mode), 1);
 }
 
 void	Channel::setNbUserLimit( int limit )
@@ -180,7 +231,7 @@ std::deque<User *>	Channel::getOpList( void ) const
 	return (this->_oplist);
 }
 
-std::deque<User *>	Channel::getBanList( void ) const
+std::deque<User *>	Channel::getInvList( void ) const
 {
-	return (this->_banlist);
+	return (this->_invitedlist);
 }

@@ -32,6 +32,8 @@ void	join(Server *server, User *user, std::deque<std::string> tokens)
 	std::string key = "";
 	Channel* channel = NULL;
 
+	if (user->getLoggedIn() == false)
+        return;
     if (tokens.size() == 2)
         channel_name = tokens[1];
     else if (tokens.size() > 2)
@@ -54,7 +56,7 @@ void	join(Server *server, User *user, std::deque<std::string> tokens)
 			E475(user->getFd(), server->getHost(), user->getNick(), channel->getName());
 		else if (channel->getModes().find("l") != std::string::npos && channel->getNbUserLimit() != 0 && channel->getNbUser() >= channel->getNbUserLimit()) //+l mode -> maximum limit of user already joined channel_name
 			E471(user->getFd(), server->getHost(), user->getNick(), channel->getName());
-		else if (channel->getModes().find("l") != std::string::npos)//+i mode -> invite only and not invited to the channel_name
+		else if (channel->getModes().find("i") != std::string::npos && !channel->findInvited(user->getFd()))//+i mode -> invite only and not invited to the channel_name
 			E473(user->getFd(), server->getHost(), user->getNick(), channel->getName());
 		else //no error
 		{

@@ -1,6 +1,6 @@
 #include "ft_irc.hpp"
 
-void	RMODE(REP_ARG, const std::string &target, const char operation, const char mode);
+void	RMODE(REP_ARG, const std::string &target, const char operation, const char mode, const std::string &param);
 
 void	E401(REP_ARG, const std::string &input_name);
 void	E502(REP_ARG);
@@ -8,21 +8,9 @@ void	R221(REP_ARG, const std::string &user_modes);
 void    E501(REP_ARG);
 
 void 	E403(REP_ARG, const std::string &channel);
-void	R324(REP_ARG, const std::string &channel, const std::string &mode);
+void	R324(REP_ARG, const std::string &channel, const std::string &mode, const std::string &param_lst);
 //329 date de creation pas oblige
 void	E482(REP_ARG, const std::string &channel);
-
-//ban +b
-//367
-//368
-
-//exception +e
-//348
-//349
-
-//invite-exception +I
-//336
-//337
 
 static bool check_user_mode(std::string mode)
 {
@@ -60,6 +48,104 @@ static bool check_channel_mode(std::string mode)
     return false;
 }
 
+static void remove_mode(Server *server, User *user, Channel* channel, std::string target, std::string mode_str, std::string param)
+{
+    char mode = 0;
+
+    if (mode_str.size() == 2)
+        mode = mode_str[1];
+    if (mode == 'i' || mode == 't' || mode == 'k' || mode == 'l')
+    {
+        channel->removeMode(mode);
+        if (mode == 'k')
+            channel->setKey("");
+        else if (mode == 'l')
+            channel->setNbUserLimit(0);
+        RMODE(user->getFd(), server->getHost(), user->getNick(), target, '-', mode, "");
+    }
+    else if (mode == 'o' && param.size())
+    {
+        User* user_target = channel->findUser(param);
+        if (!user_target)
+            E401(user->getFd(), server->getHost(), user->getNick(), param);
+        else
+        {
+            std::deque<User*> chan_users = channel->getUserList();
+            channel->delOperator(user_target->getFd());
+			for (std::deque<User *>::iterator it = chan_users.begin(); it < chan_users.end(); it++)
+                RMODE((*it)->getFd(), server->getHost(), user->getNick(), target, '-', mode, param);
+        }
+    }
+}
+
+static int stoi(std::string str)
+{
+    int nbr = 0;
+    int len = (int)str.size();
+
+    for (unsigned int i = 0; i < (unsigned int)len; i++)
+    {
+        if (str[i] < '0' || str[i] > '9')
+            break;
+        nbr *= 10;
+        nbr += (str[i] - 48);
+    };
+    return nbr;
+};
+
+static void add_mode(Server *server, User *user, Channel* channel, std::string target, std::string mode_str, std::string param)
+{
+    char mode = 0;
+
+    if (mode_str.size() == 1)
+        mode = mode_str[0];
+    else if (mode_str.size() == 2)
+        mode = mode_str[1];
+    if (mode == 'i' || mode == 't')
+    {
+        channel->addMode(mode);
+        RMODE(user->getFd(), server->getHost(), user->getNick(), target, '+', mode, "");
+    }
+    else if (mode == 'k' && param.size())
+    {
+        channel->addMode(mode);
+        channel->setKey(param);
+        RMODE(user->getFd(), server->getHost(), user->getNick(), target, '+', mode, param);
+    }
+    else if (mode == 'l' && param.size())
+    {
+        int limit = stoi(param);
+        std::stringstream sstm;
+        sstm << limit;
+        std::string limit_str = sstm.str();
+ 
+        channel->setNbUserLimit(limit);
+        if (limit > 0)
+        {
+            channel->addMode(mode);
+            RMODE(user->getFd(), server->getHost(), user->getNick(), target, '+', mode, limit_str);
+        }
+        else
+        {
+            channel->removeMode(mode);
+            RMODE(user->getFd(), server->getHost(), user->getNick(), target, '-', mode, "");
+        }
+    }
+    else if (mode == 'o' && param.size())
+    {
+        User* user_target = channel->findUser(param);
+        if (!user_target)
+            E401(user->getFd(), server->getHost(), user->getNick(), param);
+        else
+        {
+            std::deque<User*> chan_users = channel->getUserList();
+            channel->addOperator(user_target);
+			for (std::deque<User *>::iterator it = chan_users.begin(); it < chan_users.end(); it++)
+                RMODE((*it)->getFd(), server->getHost(), user->getNick(), target, '+', mode, param);
+        }
+    }
+}
+
 //i: invite-only   t: topic restriction   k: key   o: give operator privilege   l: user limit
 void	mode(Server *server, User *user, std::deque<std::string> tokens)
 {
@@ -67,6 +153,8 @@ void	mode(Server *server, User *user, std::deque<std::string> tokens)
     std::string mode = "";
     std::string param = "";
 
+    if (user->getLoggedIn() == false)
+        return;
     if (tokens.size() >= 2)
         target = tokens[1];
     if (tokens.size() >= 3)
@@ -85,18 +173,15 @@ void	mode(Server *server, User *user, std::deque<std::string> tokens)
             E502(user->getFd(), server->getHost(), user->getNick());
         else if (mode.empty())
             R221(user->getFd(), server->getHost(), user->getNick(), user->getModes());
+        else if (!check_user_mode(mode))
+            E501(user->getFd(), server->getHost(), user->getNick());
         else
         {
-            if (!check_user_mode(mode))
-                E501(user->getFd(), server->getHost(), user->getNick());
-            else
-            {
-                //ajouter ou supprimer mode de user pas a gerer je crois et on ignore les params
-                if (mode.size() == 2)
-                    RMODE(user->getFd(), server->getHost(), user->getNick(), target, mode[0], mode[1]);
-                else if (mode.size() == 1)
-                    RMODE(user->getFd(), server->getHost(), user->getNick(), target, '+', mode[0]);
-            }
+            //ajouter ou supprimer mode de user pas a gerer je crois et on ignore les params
+            if (mode.size() == 2)
+                RMODE(user->getFd(), server->getHost(), user->getNick(), target, mode[0], mode[1], "");
+            else if (mode.size() == 1)
+                RMODE(user->getFd(), server->getHost(), user->getNick(), target, '+', mode[0], "");
         }
     }
     else
@@ -104,21 +189,33 @@ void	mode(Server *server, User *user, std::deque<std::string> tokens)
         //channel mode
         if (!server->findChannel(target))
             E403(user->getFd(), server->getHost(), user->getNick(), target);
-        else if (mode.empty())
-            R324(user->getFd(), server->getHost(), user->getNick(), target, user->getModes()); //param pas a gerer
         else
         {
             Channel* channel = server->findChannel(target);
-            if (!channel->findOperator(user->getFd())) //utilisateur n'es pas un operateur
+            if (mode.empty())
+            {
+                std::stringstream param_lst;
+                param_lst << channel->getKey();
+                if (channel->getNbUserLimit() > 0)
+                    param_lst << " " << channel->getNbUserLimit();
+                R324(user->getFd(), server->getHost(), user->getNick(), target, channel->getModes(), param_lst.str());
+            }
+            else if (!channel->findOperator(user->getFd())) //utilisateur n'es pas un operateur
                 E482(user->getFd(), server->getHost(), user->getNick(), target);
             else if (!check_channel_mode(mode))
+                E501(user->getFd(), server->getHost(), user->getNick());
+            else
             {
-                //ajouter ou supprimer mode de channel
-                if (mode.size() == 2)
-                    RMODE(user->getFd(), server->getHost(), user->getNick(), target, mode[0], mode[1]);
-                else if (mode.size() == 1)
-                    RMODE(user->getFd(), server->getHost(), user->getNick(), target, '+', mode[0]);
+                if (mode[0] == '-')
+                    remove_mode(server, user, channel, target, mode, param);
+                else
+                    add_mode(server, user, channel, target, mode, param);
             }
         }
     }
 }
+
+//i t pas besoin de param
+//k param(key)
+//l param(user_limit)
+//o param(nick_user)

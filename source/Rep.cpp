@@ -50,13 +50,13 @@ void	RKICK(REP_ARG, const std::string &channel, const std::string &nick, const s
 	send_to_client(output.str(), fd);
 }
 
-void	RMODE(REP_ARG, const std::string &target, const char operation, const char mode)
+void	RMODE(REP_ARG, const std::string &target, const char operation, const char mode, const std::string &param)
 {
 	(void)host;
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << client << " MODE " << target << " " << operation << mode;
+	output << ":" << client << " MODE " << target << " " << operation << mode << " " << param;
 	send_to_client(output.str(), fd);
 }
 
@@ -79,12 +79,12 @@ void	R221(REP_ARG, const std::string &user_modes)
 }
 
 
-void	R324(REP_ARG, const std::string &channel, const std::string &mode)
+void	R324(REP_ARG, const std::string &channel, const std::string &mode, const std::string &param_lst)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 324 " << client << " " << channel << " +" << mode;
+	output << ":" << host << " 324 " << client << " " << channel << " +" << mode << " " << param_lst;
 	send_to_client(output.str(), fd);
 }
 

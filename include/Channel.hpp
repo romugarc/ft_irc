@@ -14,7 +14,7 @@ class	Channel
 		std::string	_modes;
 		std::deque<User*> _userlist; //delete quand un user est delete dans le server
 		std::deque<User*> _oplist;
-		std::deque<User*> _banlist;
+		std::deque<User*> _invitedlist;
 		int	_nb_user_limit;
 		int	_nb_user;
 
@@ -28,8 +28,8 @@ class	Channel
 		void	setName( std::string name );
 		void	setKey( std::string key );
 		void	setTopic( std::string topic );
-		//void	addMode( char mode );
-		//void	removeMode( char mode );
+		void	addMode( char mode );
+		void	removeMode( char mode );
 		void	setNbUserLimit( int limit );
 		void	setNbUser( int nb_user );
 		void	addUser( User *new_user );
@@ -39,6 +39,9 @@ class	Channel
 		void	addOperator( User *new_op );
 		void	delOperator( int user_fd );
 		User	*findOperator( int fd );
+		void	addInvited( User *new_inv );
+		void	delInvited( int user_fd );
+		User	*findInvited( int fd );
 
 
 		std::string	getName( void ) const;
@@ -49,7 +52,7 @@ class	Channel
 		int	getNbUser( void ) const;
 		std::deque<User*> getUserList( void ) const;
 		std::deque<User*> getOpList( void ) const;
-		std::deque<User*> getBanList( void ) const;
+		std::deque<User*> getInvList( void ) const;
 };
 
 #endif

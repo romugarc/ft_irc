@@ -8,12 +8,12 @@
 void	send_to_client(std::string msg, int const &fd, Server *server);
 
 void	RJOIN(REP_ARG, const std::string &channel);
-void	RMODE(REP_ARG, const std::string &target, const char operation, const char mode);
+void	RMODE(REP_ARG, const std::string &target, const char operation, const char mode, const std::string &param);
 void	RKICK(REP_ARG, const std::string &channel, const std::string &nick, const std::string &comment);
 
 void 	R001(REP_ARG, const std::string &user, const std::string &userhost);
 void	R221(REP_ARG, const std::string &user_modes);
-void	R324(REP_ARG, const std::string &channel, const std::string &mode);
+void	R324(REP_ARG, const std::string &channel, const std::string &mode, const std::string &param_lst);
 void	R331(REP_ARG, const std::string &channel);
 void	R332(REP_ARG, const std::string &channel, const std::string &topic);
 void	R341(REP_ARG, const std::string &channel, const std::string &input_name);
