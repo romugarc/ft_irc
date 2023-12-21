@@ -39,11 +39,11 @@ static bool check_channel_mode(std::string mode)
     if (mode.size() == 2 && (mode[0] == '+' || mode[0] == '-'))
     {
         if (mode[1] == 'i' || mode[1] == 't' || mode[1] == 'k'
-            || mode[1] == 'o' || mode[1] == 'l')
+            || mode[1] == 'o' || mode[1] == 'l' || mode[1] == 'n')
             return true;
     }
     else if (mode.size() == 1 && (mode[0] == 'i' || mode[0] == 't'
-        || mode[0] == 'k' || mode[0] == 'o' || mode[0] == 'l'))
+        || mode[0] == 'k' || mode[0] == 'o' || mode[0] == 'l' || mode[0] == 'n'))
         return true;
     return false;
 }
@@ -54,7 +54,7 @@ static void remove_mode(Server *server, User *user, Channel* channel, std::strin
 
     if (mode_str.size() == 2)
         mode = mode_str[1];
-    if (mode == 'i' || mode == 't' || mode == 'k' || mode == 'l')
+    if (mode == 'i' || mode == 't' || mode == 'k' || mode == 'l' || mode == 'n')
     {
         channel->removeMode(mode);
         if (mode == 'k')
@@ -101,7 +101,7 @@ static void add_mode(Server *server, User *user, Channel* channel, std::string t
         mode = mode_str[0];
     else if (mode_str.size() == 2)
         mode = mode_str[1];
-    if (mode == 'i' || mode == 't')
+    if (mode == 'i' || mode == 't' || mode == 'n')
     {
         channel->addMode(mode);
         RMODE(user->getFd(), server->getHost(), user->getNick(), target, '+', mode, "");

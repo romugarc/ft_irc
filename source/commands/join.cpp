@@ -62,11 +62,11 @@ void	join(Server *server, User *user, std::deque<std::string> tokens)
 		{
 			channel->addUser(user);
 			channel->delInvited(user->getFd());
-			if (channel->getTopic().size() > 0)//if topic exist (send the current topic of the channel_name)
-				R332(user->getFd(), server->getHost(), user->getNick(), channel->getName(), channel->getTopic());
 			std::deque<User*> chan_users = channel->getUserList();
 			for (std::deque<User *>::iterator it = chan_users.begin(); it < chan_users.end(); it++)
 				RJOIN((*it)->getFd(), server->getHost(), user->getNick(), channel->getName());
+			if (!channel->getTopic().empty())//if topic exist (send the current topic of the channel_name)
+				R332(user->getFd(), server->getHost(), user->getNick(), channel->getName(), channel->getTopic());
 			//commande NAMES
 			for (std::deque<User *>::iterator it = chan_users.begin(); it < chan_users.end(); it++)
 			{
@@ -80,10 +80,7 @@ void	join(Server *server, User *user, std::deque<std::string> tokens)
 	}
 	else //channel don't exist
 	{
-		if (key.size() > 0)
-			server->createChannel(user, channel_name, key);
-		else
-			server->createChannel(user, channel_name);
+		server->createChannel(user, channel_name);
 		RJOIN(user->getFd(), server->getHost(), user->getNick(), channel_name);
 		R353(user->getFd(), server->getHost(), user->getNick(), '=', channel_name, "@", user->getNick());
 		R366(user->getFd(), server->getHost(), user->getNick(), channel_name);

@@ -202,15 +202,17 @@ void Server::deleteUser(int user_fd)
         }
     }
 
-    for (std::deque<Channel*>::iterator chan = _channels.begin(); chan < _channels.end(); chan++)
+    for (std::deque<Channel*>::iterator chan = _channels.begin(); chan < _channels.end();)
     {
         (*chan)->delUser(user_fd);
         (*chan)->delOperator(user_fd);
         if ((*chan)->getNbUser() < 1)
         {
             delete (*chan);
-            _channels.erase(chan);
-        } //tester si l'iterateur est coherent en creant plusieurs channels avec ce user en dernier puis en supprimant ce user
+            chan = _channels.erase(chan);
+        }
+        else
+            ++chan;
     }
     
     for (std::deque<User*>::iterator it = _users.begin(); it < _users.end(); it++)
@@ -298,17 +300,6 @@ User *Server::findUser(std::string nick)
             return (_users[i]);
     }
     return (NULL);
-}
-
-void    Server::createChannel( User *user_creator, std::string name, std::string key )
-{
-    Channel    *newchannel = new Channel;
-
-    newchannel->addUser(user_creator);
-    newchannel->addOperator(user_creator);
-    newchannel->setName(name);
-    newchannel->setKey(key);
-    _channels.push_back(newchannel);
 }
 
 void    Server::createChannel( User *user_creator, std::string name )

@@ -29,6 +29,8 @@ void	invite(Server *server, User *user, std::deque<std::string> tokens)
     else
     {
         Channel* channel = server->findChannel(channel_name);
+        if (!channel) //if channel_name don't exist
+            E403(user->getFd(), server->getHost(), user->getNick(), channel_name);
         if (!channel->findUser(user->getFd())) //if user is not on channel
             E442(user->getFd(), server->getHost(), user->getNick(), channel_name);
         else if (channel->getModes().find("i") != std::string::npos && !channel->findOperator(user->getFd())) //if user is not operator of the channel
@@ -38,7 +40,8 @@ void	invite(Server *server, User *user, std::deque<std::string> tokens)
         else
         {
             User* user_name = server->findUser(nickname);
-            channel->addInvited(user_name);
+            if (channel->getModes().find("i"))
+                channel->addInvited(user_name);
             R341(user->getFd(), server->getHost(), user->getNick(), channel_name, nickname);
             R341(user_name->getFd(), server->getHost(), user->getNick(), channel_name, nickname);
         }
