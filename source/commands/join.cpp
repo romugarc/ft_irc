@@ -2,17 +2,17 @@
 
 void	RJOIN(REP_ARG, const std::string &channel);
 void	E461(REP_ARG, const std::string &cmd);
-void 	E403(REP_ARG, const std::string &channel_name);
-void	E405(REP_ARG, const std::string &channel_name);
-void	E475(REP_ARG, const std::string &channel_name);
-//void	E474(REP_ARG, const std::string &channel_name); //err ban mode
-void	E471(REP_ARG, const std::string &channel_name);
-void	E473(REP_ARG, const std::string &channel_name);
-//void	E476(REP_ARG, const std::string &channel_name);
-void	R332(REP_ARG, const std::string &channel_name, const std::string &topic);
-//void	R333(REP_ARG, const std::string &channel_name, const std::string &nick, const std::string &setat);
-void	R353(REP_ARG, const char &symbol, const std::string &channel_name, const std::string &members);
-void	R366(REP_ARG, const std::string &channel_name);
+void 	E403(REP_ARG, const std::string &channel);
+void	E405(REP_ARG, const std::string &channel);
+void	E475(REP_ARG, const std::string &channel);
+//void	E474(REP_ARG, const std::string &channel); //err ban mode
+void	E471(REP_ARG, const std::string &channel);
+void	E473(REP_ARG, const std::string &channel);
+//void	E476(REP_ARG, const std::string &channel);
+void	R332(REP_ARG, const std::string &channel, const std::string &topic);
+//void	R333(REP_ARG, const std::string &channel, const std::string &nick, const std::string &setat);
+void	R353(REP_ARG, const char &symbol, const std::string &channel, const std::string &members);
+void	R366(REP_ARG, const std::string &channel);
 
 static bool	isOp(int user_fd, Channel* channel)
 {
@@ -61,7 +61,7 @@ void	join(Server *server, User *user, std::deque<std::string> tokens)
 		else //no error
 		{
 			channel->addUser(user);
-			RJOIN(user->getFd(), server->getHost(), user->getNick(), channel->getName());
+			channel->delInvited(user->getFd());
 			if (channel->getTopic().size() > 0)//if topic exist (send the current topic of the channel_name)
 				R332(user->getFd(), server->getHost(), user->getNick(), channel->getName(), channel->getTopic());
 			std::deque<User*> chan_users = channel->getUserList();

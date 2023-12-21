@@ -116,23 +116,14 @@ void	R332(REP_ARG, const std::string &channel, const std::string &topic)
 	send_to_client(output.str(), fd);
 }
 
-void	R341(REP_ARG, const std::string &channel, const std::string &input_name)
+void	R341(REP_ARG, const std::string &channel, const std::string &target_nick)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 341 " << client << " " << channel << " " << input_name;
+	output << ":" << host << " 341 " << client << " " << channel << " " << target_nick;
 	send_to_client(output.str(), fd);
 }
-
-// void	R352(REP_ARG, const std::string &channel, const std::string &username, const std::string &nick)
-// {
-// 	std::stringstream	output;
-
-// 	output.str("");
-// 	output << ":" << host << " 352 " << client << " " << channel << " :" << username << " " << nick;
-// 	send_to_client(output.str(), fd);
-// }
 
 void	R353(REP_ARG, const char &symbol, const std::string &channel, const std::string &prefix, const std::string &nick)
 {
@@ -194,12 +185,12 @@ void	R391(REP_ARG)
 	send_to_client(output.str(), fd);
 }
 
-void	E401(REP_ARG, const std::string &input_name)
+void	E401(REP_ARG, const std::string &target_nick)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 401 " << client << " " << input_name << " :No such nick/channel";
+	output << ":" << host << " 401 " << client << " " << target_nick << " :No such nick/channel";
 	send_to_client(output.str(), fd);
 }
 
@@ -302,12 +293,12 @@ void	E433(REP_ARG, const std::string &nick)
 	send_to_client(output.str(), fd);
 }
 
-void	E441(REP_ARG, const std::string &channel, const std::string &input_name)
+void	E441(REP_ARG, const std::string &channel, const std::string &target_nick)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 441 " << client << " " << input_name << " " << channel << " :They aren't on that channel";
+	output << ":" << host << " 441 " << client << " " << target_nick << " " << channel << " :They aren't on that channel";
 	send_to_client(output.str(), fd);
 }
 
@@ -320,12 +311,12 @@ void	E442(REP_ARG, const std::string &channel)
 	send_to_client(output.str(), fd);
 }
 
-void	E443(REP_ARG, const std::string &channel, const std::string &input_name)
+void	E443(REP_ARG, const std::string &channel, const std::string &target_nick)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 443 " << client << " " << input_name << " " << channel << " :is already on channel";
+	output << ":" << host << " 443 " << client << " " << target_nick << " " << channel << " :is already on channel";
 	send_to_client(output.str(), fd);
 }
 

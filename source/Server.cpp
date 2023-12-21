@@ -109,7 +109,7 @@ void    Server::loop(void)
     static int i;
     serv_fd.fd = _socket_fd;
     serv_fd.events = POLLIN; //POLLIN = attente de lecture | POLLOUT = ecriture non-bloquante
-    _fds.push_back(serv_fd); //vector<struct pollfd>
+    _fds.push_back(serv_fd); //deque<struct pollfd>
 
     std::cout << GREEN << "GREEN Message Client" << RESET << std::endl;
     std::cout << CYAN << "CYAN Reply Server" << RESET << std::endl;
@@ -348,10 +348,10 @@ Channel *Server::findChannel(std::string name)
 
 void	Server::execute( User *current_user )
 {
-	std::string	commands[] = {"PASS", "NICK", "USER", "JOIN", "MODE", "KICK", "QUIT"}; //, "INVITE", "TOPIC", "MODE"}; //ajouter fonctions au jur et a mesure
+	std::string	commands[] = {"PASS", "NICK", "USER", "JOIN", "MODE", "KICK", "INVITE", "TOPIC", "QUIT"};
     int	i = 0;
 
-	while (current_user->getTokens()[0] != commands[i] && i++ < 6);
+	while (current_user->getTokens()[0] != commands[i] && i++ < 9);
 
 	switch (i) //agrandir ce switch au fur et a mesure
 	{
@@ -374,6 +374,13 @@ void	Server::execute( User *current_user )
             kick(this, current_user, current_user->getTokens());
             break;
         case 6:
+            invite(this, current_user, current_user->getTokens());
+            break;
+        case 7:
+            topic(this, current_user, current_user->getTokens());
+            break;
+            break;
+        case 8:
             quit(this, current_user, current_user->getTokens());
             break;
 		default:

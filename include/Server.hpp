@@ -13,7 +13,7 @@ class Server
         std::string _port;
         std::string _password;
         int _socket_fd;
-        std::deque<struct pollfd> _fds; //transformer en deque
+        std::deque<struct pollfd> _fds;
         std::deque<User *>      _users;
         std::deque<Channel *>   _channels;
 
