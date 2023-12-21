@@ -109,7 +109,7 @@ void    Server::loop(void)
     static int i;
     serv_fd.fd = _socket_fd;
     serv_fd.events = POLLIN; //POLLIN = attente de lecture | POLLOUT = ecriture non-bloquante
-    _fds.push_back(serv_fd); //vector<struct pollfd>
+    _fds.push_back(serv_fd); //deque<struct pollfd>
 
     std::cout << GREEN << "GREEN Message Client" << RESET << std::endl;
     std::cout << CYAN << "CYAN Reply Server" << RESET << std::endl;
@@ -128,7 +128,7 @@ void    Server::loop(void)
         {
             createUser();
         }
-        for (std::vector<struct pollfd>::iterator i_pollfd = _fds.begin() + 1; i_pollfd < _fds.end(); i_pollfd++)
+        for (std::deque<struct pollfd>::iterator i_pollfd = _fds.begin() + 1; i_pollfd < _fds.end(); i_pollfd++)
         {
             if (i_pollfd->revents & POLLIN) //si un event POLLIN sur un user
             {
@@ -146,7 +146,7 @@ void    Server::loop(void)
 
 void    Server::deleteSocket(void)
 {
-    for (std::vector<struct pollfd>::iterator i_pollfd = _fds.begin() + 1; i_pollfd < _fds.end(); i_pollfd++)
+    for (std::deque<struct pollfd>::iterator i_pollfd = _fds.begin() + 1; i_pollfd < _fds.end(); i_pollfd++)
     {
         if (close(i_pollfd->fd)) //close la socket de chaque user
             throw std::runtime_error("Error: close()");
@@ -189,7 +189,7 @@ void    Server::createUser(void)
 void Server::deleteUser(int user_fd)
 {
     //enlever le user de la liste
-    for (std::vector<struct pollfd>::iterator i_pollfd = _fds.begin() + 1; i_pollfd < _fds.end(); i_pollfd++)
+    for (std::deque<struct pollfd>::iterator i_pollfd = _fds.begin() + 1; i_pollfd < _fds.end(); i_pollfd++)
     {
         if (i_pollfd->fd == user_fd)
         {
@@ -343,10 +343,10 @@ Channel *Server::findChannel(std::string name)
 
 void	Server::execute( User *current_user )
 {
-	std::string	commands[] = {"PASS", "NICK", "USER", "JOIN", "MODE", "KICK"}; //, "INVITE", "TOPIC", "MODE"}; //ajouter fonctions au jur et a mesure
+	std::string	commands[] = {"PASS", "NICK", "USER", "JOIN", "MODE", "KICK", "INVITE", "TOPIC"}; //, "INVITE", "TOPIC", "MODE"}; //ajouter fonctions au jur et a mesure
     int	i = 0;
 
-	while (current_user->getTokens()[0] != commands[i] && i++ < 6);
+	while (current_user->getTokens()[0] != commands[i] && i++ < 7);
 
 	switch (i) //agrandir ce switch au fur et a mesure
 	{
@@ -367,6 +367,13 @@ void	Server::execute( User *current_user )
 			break;
         case 5:
             kick(this, current_user, current_user->getTokens());
+            break;
+        case 6:
+            invite(this, current_user, current_user->getTokens());
+            break;
+        case 7:
+            topic(this, current_user, current_user->getTokens());
+            break;
 		default:
 			//throw exception?
 			break;
