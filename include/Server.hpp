@@ -42,7 +42,7 @@ class Server
         void createUser(void);
         void deleteUser(int user_fd);
         void userMsg(int user_fd);
-        void parseMsg(User *current_user, std::string message);
+        void parseMsg(User *current_user);
         User *findUser(int fd);
         User *findUser(std::string nick);
 

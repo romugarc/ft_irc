@@ -114,7 +114,6 @@ void    Server::loop(void)
     std::cout << GREEN << "GREEN Message Client" << RESET << std::endl;
     std::cout << CYAN << "CYAN Reply Server" << RESET << std::endl;
 
-    std::cout << g_pascommun << std::endl;
     _fds[0].revents = 0;
     while (g_pascommun == 0)
     {
@@ -133,14 +132,14 @@ void    Server::loop(void)
             if (i_pollfd->revents & POLLIN) //si un event POLLIN sur un user
             {
                 userMsg(i_pollfd->fd);
-                if (findUser(i_pollfd->fd)->getQuit() == true)
-                    deleteUser(i_pollfd->fd);
-                displayAllUsers();
-                displayAllChannels();
+                // displayAllUsers();
+                // displayAllChannels();
             }
             if (i_pollfd->revents & POLLOUT) //si un event POLLOUT sur un user
             {
-                //servMsgtoUser(i_pollfd->fd);
+                parseMsg(findUser(i_pollfd->fd));
+                if (findUser(i_pollfd->fd)->getQuit() == true)
+                    deleteUser(i_pollfd->fd);  
             }
         }
    }
@@ -190,7 +189,6 @@ void    Server::createUser(void)
 
 void Server::deleteUser(int user_fd)
 {
-    //enlever le user de la liste
     for (std::deque<struct pollfd>::iterator i_pollfd = _fds.begin() + 1; i_pollfd < _fds.end(); i_pollfd++)
     {
         if (i_pollfd->fd == user_fd)
@@ -243,7 +241,8 @@ void    Server::userMsg(int user_fd)
         {
             if (close(user_fd))
                 throw std::runtime_error("Error: close()");
-            quit(this, findUser(user_fd));
+            //quit(this, findUser(user_fd));
+            findUser(user_fd)->setQuit();
             return;
         }
         else
@@ -256,17 +255,20 @@ void    Server::userMsg(int user_fd)
 
     User    *user = findUser(user_fd);
     if (user != NULL)
-        parseMsg(user, message);
+        user->setMessage(message);
 }
 
-void    Server::parseMsg(User *current_user, std::string message)
+void    Server::parseMsg(User *current_user)
 {
-    current_user->setMessage(message);
-
-    while (message.find("\r\n") != std::string::npos)
+    if (current_user->getQuit() == true)
     {
-        current_user->tokenizeMessage(message);
-        message = message.substr(message.find("\r\n") + 2, message.length());
+        quit(this, current_user);
+        return;
+    }
+    while (current_user->getMessage().find("\r\n") != std::string::npos)
+    {
+        current_user->tokenizeMessage(current_user->getMessage());
+        current_user->setMessage(current_user->getMessage().substr(current_user->getMessage().find("\r\n") + 2, current_user->getMessage().length()));
         execute(current_user);
         if (current_user->getQuit() == true)
             return;

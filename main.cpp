@@ -1,10 +1,12 @@
 #include "ft_irc.hpp"
+#include <cstdlib>
 #include <csignal>
 
 extern bool g_pascommun;
 
 static int verif_port(char *port)
 {
+	int	port_num;
 	int i = 0;
 	while (port[i] != '\0')
 	{
@@ -13,6 +15,9 @@ static int verif_port(char *port)
 		i++;
 	}
 	if (i <= 0 || i >= 6)
+		return 0;
+	port_num = std::atoi(port);
+	if (port_num < 1024 || port_num > 65535)
 		return 0;
 	return 1;
 }

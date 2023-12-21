@@ -64,7 +64,6 @@ void	User::setUsername( std::string str )
 
 void	User::setMessage( std::string str )
 {
-	//gérer les ctrlD, donc gérer les messages jusqu'a recevoir un /n
 	if (this->_message.empty())
 		this->_message = str;
 	else if (this->_message[this->_message.length() - 1] != '\n')

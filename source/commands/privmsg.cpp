@@ -2,10 +2,8 @@
 
 static bool isInUserlist(std::deque<User*> users, std::string username)
 {
-	std::cout << users.size() << std::endl;
 	for (size_t i = 0; i < users.size(); i++)
 	{
-		std::cout << users[i]->getNick() << std::endl;
 		if (username == users[i]->getNick())
 			return true;
 	}
@@ -47,7 +45,6 @@ void	privmsg(Server *server, User *user, std::deque<std::string> tokens)
 	chanlist = server->getChannels();
 	isuser = isInUserlist(userlist, tokens[1]);
 	ischan = isInChanlist(chanlist, tokens[1]);
-	std::cout << tokens[1] << ">> " << isuser << std::endl;
 	if (!isuser && !ischan)
 	{
 		E401(user->getFd(), server->getHost(), user->getNick(), tokens[1]);
