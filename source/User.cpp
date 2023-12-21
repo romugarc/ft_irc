@@ -1,6 +1,6 @@
 #include "User.hpp"
 
-User::User( void ) : _logged_in(false), _pass(false), _nb_chan_limit(0)
+User::User( void ) : _logged_in(false), _pass(false), _quit(false), _nb_chan_limit(0)
 {
 	_modes = "";
 	_nick = "";
@@ -83,6 +83,11 @@ void	User::setNbChan( int nb_chan )
 	this->_nb_chan = nb_chan;
 }
 
+void	User::setQuit( void )
+{
+	this->_quit = true;
+}
+
 ////////////////////////getters////////////////////////
 
 std::string	User::getHostName( void ) const
@@ -103,6 +108,11 @@ bool	User::getLoggedIn( void ) const
 bool	User::getPass( void ) const
 {
 	return (this->_pass);
+}
+
+bool	User::getQuit( void ) const
+{
+	return (this->_quit);
 }
 
 std::string	User::getNick( void ) const
@@ -163,6 +173,7 @@ void	User::tokenizeMessage(std::string message)
 		i = j;
 		if (message[i] == ':')
 		{
+			i++;
 			while (j < message.find("\r\n") && message[j] != '\0')
 				j++;
 		}

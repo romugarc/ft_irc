@@ -60,6 +60,16 @@ void	RMODE(REP_ARG, const std::string &target, const char operation, const char 
 	send_to_client(output.str(), fd);
 }
 
+void	RQUIT(REP_ARG, const std::string &comment)
+{
+	(void)host;
+	std::stringstream	output;
+
+	output.str("");
+	output << ":" << client << " QUIT " << ":Quit: " << comment;
+	send_to_client(output.str(), fd);
+}
+
 void 	R001(REP_ARG, const std::string &user, const std::string &userhost)
 {
 	std::stringstream	output;

@@ -12,6 +12,7 @@ class	User
 		int		_fd;
 		bool	_logged_in;
 		bool	_pass;
+		bool	_quit;
 		std::string _nick;
 		std::string	_username;
 		std::string	_message;
@@ -33,6 +34,7 @@ class	User
 		void	setFd( int fd );
 		void	setLoggedIn( bool logged );
 		void	setPass( bool pass_status );
+		void	setQuit( void );
 		void	setNick( std::string str );
 		void	setUsername( std::string str );
 		void	setMessage( std::string str );
@@ -43,6 +45,7 @@ class	User
 		int	getFd( void ) const;
 		bool	getLoggedIn( void ) const;
 		bool	getPass( void ) const;
+		bool	getQuit( void ) const;
 		std::string	getNick( void ) const;
 		std::string	getUsername( void ) const;
 		std::string	getMessage( void ) const;

@@ -128,11 +128,13 @@ void    Server::loop(void)
         {
             createUser();
         }
-        for (std::vector<struct pollfd>::iterator i_pollfd = _fds.begin() + 1; i_pollfd < _fds.end(); i_pollfd++)
+        for (std::deque<struct pollfd>::iterator i_pollfd = _fds.begin() + 1; i_pollfd < _fds.end(); i_pollfd++)
         {
             if (i_pollfd->revents & POLLIN) //si un event POLLIN sur un user
             {
                 userMsg(i_pollfd->fd);
+                if (findUser(i_pollfd->fd)->getQuit() == true)
+                    deleteUser(i_pollfd->fd);
                 displayAllUsers();
                 displayAllChannels();
             }
@@ -146,7 +148,7 @@ void    Server::loop(void)
 
 void    Server::deleteSocket(void)
 {
-    for (std::vector<struct pollfd>::iterator i_pollfd = _fds.begin() + 1; i_pollfd < _fds.end(); i_pollfd++)
+    for (std::deque<struct pollfd>::iterator i_pollfd = _fds.begin() + 1; i_pollfd < _fds.end(); i_pollfd++)
     {
         if (close(i_pollfd->fd)) //close la socket de chaque user
             throw std::runtime_error("Error: close()");
@@ -189,7 +191,7 @@ void    Server::createUser(void)
 void Server::deleteUser(int user_fd)
 {
     //enlever le user de la liste
-    for (std::vector<struct pollfd>::iterator i_pollfd = _fds.begin() + 1; i_pollfd < _fds.end(); i_pollfd++)
+    for (std::deque<struct pollfd>::iterator i_pollfd = _fds.begin() + 1; i_pollfd < _fds.end(); i_pollfd++)
     {
         if (i_pollfd->fd == user_fd)
         {
@@ -208,7 +210,7 @@ void Server::deleteUser(int user_fd)
         {
             delete (*chan);
             _channels.erase(chan);
-        }
+        } //tester si l'iterateur est coherent en creant plusieurs channels avec ce user en dernier puis en supprimant ce user
     }
     
     for (std::deque<User*>::iterator it = _users.begin(); it < _users.end(); it++)
@@ -239,7 +241,7 @@ void    Server::userMsg(int user_fd)
         {
             if (close(user_fd))
                 throw std::runtime_error("Error: close()");
-            deleteUser(user_fd);
+            quit(this, findUser(user_fd));
             return;
         }
         else
@@ -251,7 +253,8 @@ void    Server::userMsg(int user_fd)
     displayMessage(message);
 
     User    *user = findUser(user_fd);
-    parseMsg(user, message);
+    if (user != NULL)
+        parseMsg(user, message);
 }
 
 void    Server::parseMsg(User *current_user, std::string message)
@@ -263,6 +266,8 @@ void    Server::parseMsg(User *current_user, std::string message)
         current_user->tokenizeMessage(message);
         message = message.substr(message.find("\r\n") + 2, message.length());
         execute(current_user);
+        if (current_user->getQuit() == true)
+            return;
     }
 
     if (current_user->getLoggedIn() == false)
@@ -343,7 +348,7 @@ Channel *Server::findChannel(std::string name)
 
 void	Server::execute( User *current_user )
 {
-	std::string	commands[] = {"PASS", "NICK", "USER", "JOIN", "MODE", "KICK"}; //, "INVITE", "TOPIC", "MODE"}; //ajouter fonctions au jur et a mesure
+	std::string	commands[] = {"PASS", "NICK", "USER", "JOIN", "MODE", "KICK", "QUIT"}; //, "INVITE", "TOPIC", "MODE"}; //ajouter fonctions au jur et a mesure
     int	i = 0;
 
 	while (current_user->getTokens()[0] != commands[i] && i++ < 6);
@@ -367,6 +372,10 @@ void	Server::execute( User *current_user )
 			break;
         case 5:
             kick(this, current_user, current_user->getTokens());
+            break;
+        case 6:
+            quit(this, current_user, current_user->getTokens());
+            break;
 		default:
 			//throw exception?
 			break;
