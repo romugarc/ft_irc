@@ -348,7 +348,7 @@ Channel *Server::findChannel(std::string name)
 
 void	Server::execute( User *current_user )
 {
-	std::string	commands[] = {"PASS", "NICK", "USER", "JOIN", "MODE", "KICK", "INVITE", "TOPIC", "QUIT"};
+	std::string	commands[] = {"PASS", "NICK", "USER", "JOIN", "MODE", "KICK", "INVITE", "TOPIC", "PRIVMSG", "QUIT"};
     int	i = 0;
 
     if (current_user->getTokens().size() <= 0)
@@ -383,8 +383,10 @@ void	Server::execute( User *current_user )
         case 7:
             topic(this, current_user, current_user->getTokens());
             break;
-            break;
         case 8:
+            privmsg(this, current_user, current_user->getTokens());
+            break;
+        case 9:
             quit(this, current_user, current_user->getTokens());
             break;
 		default:

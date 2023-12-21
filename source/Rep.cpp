@@ -70,6 +70,16 @@ void	RQUIT(REP_ARG, const std::string &comment)
 	send_to_client(output.str(), fd);
 }
 
+void	RPRIVMSG(REP_ARG, const std::string &target, const std::string &content)
+{
+	(void)host;
+	std::stringstream	output;
+
+	output.str("");
+	output << ":" << client << " PRIVMSG " << target << " :" << content;
+	send_to_client(output.str(), fd);
+}
+
 void 	R001(REP_ARG, const std::string &user, const std::string &userhost)
 {
 	std::stringstream	output;

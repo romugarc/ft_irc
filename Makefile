@@ -11,9 +11,10 @@ SRCS	=	main.cpp			\
 			source/commands/join.cpp	\
 			source/commands/mode.cpp	\
 			source/commands/kick.cpp	\
-			source/commands/quit.cpp	\
 			source/commands/invite.cpp	\
-			source/commands/topic.cpp
+			source/commands/topic.cpp	\
+			source/commands/privmsg.cpp	\
+			source/commands/quit.cpp
 
 OBJS	=	${SRCS:.cpp=.o}
 

@@ -11,6 +11,7 @@ void	RJOIN(REP_ARG, const std::string &channel);
 void	RMODE(REP_ARG, const std::string &target, const char operation, const char mode, const std::string &param);
 void	RKICK(REP_ARG, const std::string &channel, const std::string &nick, const std::string &comment);
 void	RQUIT(REP_ARG, const std::string &comment);
+void	RPRIVMSG(REP_ARG, const std::string &target, const std::string &content);
 
 void 	R001(REP_ARG, const std::string &user, const std::string &userhost);
 void	R221(REP_ARG, const std::string &user_modes);

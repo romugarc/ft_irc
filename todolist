@@ -1,12 +1,8 @@
 Server:
-- Remplacer std::vector en std::deque pour fds
-- Faire les retours d'erreur
 
 User:
 - Faire la fonction execute
 - Faire les fonctions de commande
-- Faire les retours d'erreur
 
 Channel:
-- Faire createChannel puis join
-- Faire les retours d'erreur
+- afficher topic quand on join un channel si le topic existe
