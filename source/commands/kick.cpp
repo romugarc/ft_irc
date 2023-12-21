@@ -13,6 +13,8 @@ void	kick(Server *server, User *user, std::deque<std::string> tokens)
 	User	*target = NULL;
 	std::deque<User*>	userlist;
 
+	if (user->getLoggedIn() == false)
+		return;
 	if (tokens.size() < 3 || tokens[1].empty()) //if not enough args
 	{
 		E461(user->getFd(), server->getHost(), user->getNick(), "KICK");

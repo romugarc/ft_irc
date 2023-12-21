@@ -1,5 +1,7 @@
 #include "Server.hpp"
 
+bool g_pascommun = 0;
+
 Server::Server(void) { }
 
 Server::Server(const Server &src) {*this = src;}
@@ -11,6 +13,10 @@ Server::~Server(void)
     for (size_t i = 0; i < _users.size(); i++)
     {
         delete _users[i];
+    }
+    for (size_t i = 0; i < _channels.size(); i++)
+    {
+        delete _channels[i];
     }
 }
 
@@ -100,6 +106,7 @@ void    Server::createSocket(void)
 void    Server::loop(void)
 {
     struct pollfd serv_fd; //struct pollfd => .events = parametres d'entree, .revents = parametres de sortie detecte
+    static int i;
     serv_fd.fd = _socket_fd;
     serv_fd.events = POLLIN; //POLLIN = attente de lecture | POLLOUT = ecriture non-bloquante
     _fds.push_back(serv_fd); //vector<struct pollfd>
@@ -107,14 +114,15 @@ void    Server::loop(void)
     std::cout << GREEN << "GREEN Message Client" << RESET << std::endl;
     std::cout << CYAN << "CYAN Reply Server" << RESET << std::endl;
 
-    while (1)
+    std::cout << g_pascommun << std::endl;
+    _fds[0].revents = 0;
+    while (g_pascommun == 0)
     {
-        static int i;
         i++;
         std::cout << "\r(Poll " << i << ") " << std::flush;
 
         nfds_t n_fds = _fds.size(); //nfds_t = size_t pour pollfd
-        if (poll(&_fds[0], n_fds, -1) == -1)
+        if (poll(&_fds[0], n_fds, -1) == -1 && !g_pascommun)
             throw std::runtime_error("Error server: poll");
         if (_fds[0].revents & POLLIN) //si un event POLLIN sur le serv
         {
@@ -159,8 +167,8 @@ void    Server::createUser(void)
     _fds.back().events = POLLIN | POLLOUT;
     if (_fds.back().fd == -1)
         throw std::runtime_error("Error: accept()");
-    if (fcntl(_fds.back().fd, F_SETFL, O_NONBLOCK) == -1)
-        throw std::runtime_error("Error: fcntl()");
+    // if (fcntl(_fds.back().fd, F_SETFL, O_NONBLOCK) == -1)
+    //     throw std::runtime_error("Error: fcntl()");
     /*int flags = fcntl(_fds.back().fd, F_GETFL, 0);
     if (flags & O_NONBLOCK)
         std::cout << "non_bloquant" << std::endl;
@@ -171,11 +179,11 @@ void    Server::createUser(void)
     User    *newuser = new User;
     char hostname[NI_MAXHOST];
 
-    _users.push_back(newuser);
 	if (getnameinfo((struct sockaddr *)(&sock_new_user), sock_new_user_len, hostname, sizeof(hostname), NULL, 0, NI_NUMERICHOST))
 		throw std::runtime_error("Error: getnameinfo()");
-    _users.back()->setHostName(hostname);
-    _users.back()->setFd(_fds.back().fd);
+    newuser->setHostName(hostname);
+    newuser->setFd(_fds.back().fd);
+    _users.push_back(newuser);
 }
 
 void Server::deleteUser(int user_fd)
@@ -185,17 +193,9 @@ void Server::deleteUser(int user_fd)
     {
         if (i_pollfd->fd == user_fd)
         {
+            close(i_pollfd->fd);
             _fds.erase(i_pollfd);
             std::cout << "User Deconnection fd : " << user_fd << std::endl;
-            break;
-        }
-    }
-    
-    for (std::deque<User*>::iterator it = _users.begin(); it < _users.end(); it++)
-    {
-        if ((*it)->getFd() == user_fd)
-        {
-            _users.erase(it);
             break;
         }
     }
@@ -205,7 +205,20 @@ void Server::deleteUser(int user_fd)
         (*chan)->delUser(user_fd);
         (*chan)->delOperator(user_fd);
         if ((*chan)->getNbUser() < 1)
+        {
+            delete (*chan);
             _channels.erase(chan);
+        }
+    }
+    
+    for (std::deque<User*>::iterator it = _users.begin(); it < _users.end(); it++)
+    {
+        if ((*it)->getFd() == user_fd)
+        {
+            delete (*it);
+            _users.erase(it);
+            break;
+        }
     }
 }
 
@@ -237,7 +250,8 @@ void    Server::userMsg(int user_fd)
     std::cout << "User fd " << user_fd << " : " << std::endl;
     displayMessage(message);
 
-    parseMsg(findUser(user_fd), message);
+    User    *user = findUser(user_fd);
+    parseMsg(user, message);
 }
 
 void    Server::parseMsg(User *current_user, std::string message)
@@ -308,6 +322,7 @@ void    Server::deleteChannel( std::string channel_name )
     {
         if ((*it)->getName() == channel_name)
         {
+            delete (*it);
             _channels.erase(it);
             break;
         }
@@ -329,14 +344,9 @@ Channel *Server::findChannel(std::string name)
 void	Server::execute( User *current_user )
 {
 	std::string	commands[] = {"PASS", "NICK", "USER", "JOIN", "MODE", "KICK"}; //, "INVITE", "TOPIC", "MODE"}; //ajouter fonctions au jur et a mesure
-	int	i = 0;
+    int	i = 0;
 
-	while (i < 10)
-	{
-		if (commands[i] == current_user->getTokens()[0])
-			break;
-		i++;
-	}
+	while (current_user->getTokens()[0] != commands[i] && i++ < 6);
 
 	switch (i) //agrandir ce switch au fur et a mesure
 	{

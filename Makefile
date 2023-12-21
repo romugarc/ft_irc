@@ -16,10 +16,17 @@ OBJS	=	${SRCS:.cpp=.o}
 
 DIR_INC	=	include
 
+HEADER_FILES	= ${DIR_INC}/ft_irc.hpp		\
+				  ${DIR_INC}/Channel.hpp 	\
+				  ${DIR_INC}/Commands.hpp	\
+				  ${DIR_INC}/Rep.hpp		\
+				  ${DIR_INC}/Server.hpp		\
+				  ${DIR_INC}/User.hpp
+
 CC		=	c++
 RM		=	rm -f
 
-CFLAGS	=	-Wall -Wextra -Werror -Wconversion -I$(DIR_INC) -std=c++98
+CFLAGS	=	-Wall -Wextra -Werror -Wconversion -I$(DIR_INC) -std=c++98 -g3
 all:		${NAME}
 
 %.o : %.cpp 	${HEADER_FILES}

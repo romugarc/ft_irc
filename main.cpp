@@ -1,4 +1,7 @@
 #include "ft_irc.hpp"
+#include <csignal>
+
+extern bool g_pascommun;
 
 static int verif_port(char *port)
 {
@@ -20,8 +23,17 @@ static int verif_password(char *password)
 	return 1;
 }
 
+static void	signal_handler(int sig)
+{
+	if (sig == SIGINT)
+	{
+		g_pascommun = 1;
+	}
+}
+
 int	main(int argc, char **argv)
 {
+	signal(SIGINT, &signal_handler);
 	if (argc != 3)
     {
         std::cerr << "Error usage: ./ircserv <port> <password>" << std::endl;

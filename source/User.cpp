@@ -1,8 +1,11 @@
 #include "User.hpp"
 
-User::User( void ) : _logged_in(false), _nb_chan_limit(0)
+User::User( void ) : _logged_in(false), _pass(false), _nb_chan_limit(0)
 {
-	_modes = "wx";
+	_modes = "";
+	_nick = "";
+	_username = "";
+	_message = "";
 }
 
 User::User( User const &src ) : _logged_in(src.getLoggedIn()), _nb_chan_limit(src.getNbChanLimit())
