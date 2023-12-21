@@ -55,7 +55,7 @@ void	privmsg(Server *server, User *user, std::deque<std::string> tokens)
 	else if (ischan)
 	{
 		c_target = server->findChannel(tokens[1]);
-		if (c_target->getModes().find("n") == std::string::npos && !c_target->findUser(user->getFd()))
+		if (c_target->getModes().find("n") != std::string::npos && c_target->findUser(user->getFd()) == NULL)
 		{
 			E404(user->getFd(), server->getHost(), user->getNick(), c_target->getName());
 			return;
