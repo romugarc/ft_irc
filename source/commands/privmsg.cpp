@@ -26,6 +26,7 @@ void	privmsg(Server *server, User *user, std::deque<std::string> tokens)
 {
 	std::deque<User*>		userlist;
 	std::deque<Channel*>	chanlist;
+	std::deque<User*>		chanusers;
 	User					*u_target = NULL;
 	Channel					*c_target = NULL;
 	bool					isuser = false;
@@ -61,7 +62,8 @@ void	privmsg(Server *server, User *user, std::deque<std::string> tokens)
 			return;
 		}
 
-		for (std::deque<User*>::iterator it = userlist.begin(); it < userlist.end(); it++)
+		chanusers = c_target->getUserList();
+		for (std::deque<User*>::iterator it = chanusers.begin(); it < chanusers.end(); it++)
 		{
 			if ((*it)->getFd() != user->getFd())
 				RPRIVMSG((*it)->getFd(), server->getHost(), user->getNick(), tokens[1], tokens[2]);
