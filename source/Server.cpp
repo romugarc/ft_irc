@@ -152,6 +152,7 @@ void Server::deleteUser(int user_fd)
     {
         (*chan)->delUser(user_fd);
         (*chan)->delOperator(user_fd);
+        (*chan)->delInvited(user_fd);
         if ((*chan)->getNbUser() < 1)
         {
             delete (*chan);

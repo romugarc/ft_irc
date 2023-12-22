@@ -24,7 +24,7 @@ void	invite(Server *server, User *user, std::deque<std::string> tokens)
 		E461(server->getHost(), user, "INVITE");
     else if (!server->findUser(nickname)) //if user don't exist
 		E401(server->getHost(), user, nickname);
-    else if (channel_name.size() < 1 || (channel_name[0] != '#' && channel_name[0] != '&'))//if channel_name don't exist (no types # &)
+    else if (channel_name.size() < 1 || (channel_name[0] != '#'))//if channel_name don't exist (no types # &)
 		E403(server->getHost(), user, channel_name);
     else
     {

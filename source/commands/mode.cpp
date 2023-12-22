@@ -166,7 +166,7 @@ void	mode(Server *server, User *user, std::deque<std::string> tokens)
 
     if (target.empty())
         E461(server->getHost(), user, "MODE");
-    else if (target.size() >= 1 && (target[0] != '#' && target[0] != '&'))
+    else if (target.size() >= 1 && (target[0] != '#'))
     {
         //user mode
         E501(server->getHost(), user);

@@ -27,6 +27,15 @@ void	RJOIN(User *u1, User *u2, Channel *c)
 	u1->addReply(output.str());
 }
 
+void	RTOPIC(User *u1, User *u2, Channel *c, const std::string &topic)
+{
+	std::stringstream	output;
+
+	output.str("");
+	output << ":" << u2->getClientId() << " TOPIC " << c->getName() << " " << topic << "\r\n";
+	u1->addReply(output.str());
+}
+
 void	RPART(User *u1, User *u2, Channel *c, const std::string &comment)
 {
 	std::stringstream	output;
@@ -65,7 +74,7 @@ void	RQUIT(User *u1, User *u2, const std::string &comment)
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << u2->getClientId() << " QUIT " << ":Quit: " << comment << "\r\n";
+	output << ":" << u2->getClientId() << " QUIT " << ":" << comment << "\r\n";
 	u1->addReply(output.str());
 }
 

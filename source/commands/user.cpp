@@ -6,6 +6,9 @@ void	E462(const std::string &host, User *u);
 void	user(Server *server, User *user, std::deque<std::string> tokens)
 {
   (void)server;
+
+  if (user->getPass() == false)
+    return;
   if (tokens.size() <= 1 || tokens[1].empty()) //if not enough args
 		E461(server->getHost(), user, "USER");
 	else if (user->getLoggedIn() == true) //if registration already done

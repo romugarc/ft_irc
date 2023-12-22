@@ -7,6 +7,7 @@ void	send_to_client(User *u);
 
 void	RNICK(User *u1, User *u2, const std::string &nick);
 void	RJOIN(User *u1, User *u2, Channel *c);
+void	RTOPIC(User *u1, User *u2, Channel *c, const std::string &topic);
 void	RPART(User *u1, User *u2, Channel *c, const std::string &comment);
 void	RKICK(User *u1, User *u2, Channel *c, const std::string &nick, const std::string &comment);
 void	RMODE(User *u1, User *u2, const std::string &target, const char operation, const char mode, const std::string &param);

@@ -22,7 +22,7 @@ void	part(Server *server, User *user, std::deque<std::string> tokens)
 
     if (tokens.size() <= 1 || channel_name.empty()) //if not enough args
 		E461(server->getHost(), user, "PART");
-	else if (channel_name.size() < 1 || (channel_name[0] != '#' && channel_name[0] != '&') || !channel)//if channel_name don't exist (no types # &)
+	else if (channel_name.size() < 1 || (channel_name[0] != '#') || !channel)//if channel_name don't exist (no types # &)
 		E403(server->getHost(), user, channel_name);
     else if (!channel->findUser(user->getFd())) //if user is not on channel
         E442(server->getHost(), user, channel);

@@ -20,13 +20,13 @@ void	topic(Server *server, User *user, std::deque<std::string> tokens)
 		topic = tokens[2];
     if (tokens.size() <= 1 || channel_name.empty()) //if not enough args
 		E461(server->getHost(), user, "TOPIC");
-    else if (channel_name.size() < 1 || (channel_name[0] != '#' && channel_name[0] != '&'))//if channel_name don't exist (no types # &)
+    else if (channel_name.size() < 1 || (channel_name[0] != '#'))//if channel_name don't exist (no types # &)
 		E403(server->getHost(), user, channel_name);
     else
     {
         Channel* channel = server->findChannel(channel_name);
         if (!channel)//if channel_name don't exist
-            E403(server->getHost(), user, channel->getName());
+            E403(server->getHost(), user, channel_name);
         else if (!channel->findUser(user->getFd())) //if user is not on channel
             E442(server->getHost(), user, channel);
         else if (tokens.size() <= 2 || topic.empty()) //if no topic arg
@@ -40,8 +40,10 @@ void	topic(Server *server, User *user, std::deque<std::string> tokens)
             E482(server->getHost(), user, channel);
         else //set topic
         {
+            std::deque<User*> chan_users = channel->getUserList();
+            for (std::deque<User*>::iterator it = chan_users.begin(); it < chan_users.end() ;it++)
+                RTOPIC((*it), user, channel, topic);
             channel->setTopic(topic);
-            R332(server->getHost(), user, channel);
         }
     }
 }

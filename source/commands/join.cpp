@@ -43,7 +43,7 @@ void	join(Server *server, User *user, std::deque<std::string> tokens)
 
     if (tokens.size() <= 1 || channel_name.empty()) //if not enough args
 		E461(server->getHost(), user, "JOIN");
-	else if (channel_name.size() < 1 || (channel_name[0] != '#' && channel_name[0] != '&'))//if channel_name don't exist (no types # &)
+	else if (channel_name.size() < 1 || (channel_name[0] != '#'))//if channel_name don't exist (no types # &)
 		E403(server->getHost(), user, channel_name);
 	else if (channel)//channel exist
 	{
