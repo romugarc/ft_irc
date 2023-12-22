@@ -1,8 +1,0 @@
-Server:
-
-User:
-- Faire la fonction execute
-- Faire les fonctions de commande
-
-Channel:
-- afficher topic quand on join un channel si le topic existe

@@ -43,7 +43,7 @@ void	invite(Server *server, User *user, std::deque<std::string> tokens)
             else
             {
                 User* invited_user = server->findUser(nickname);
-                if (channel->getModes().find("i"))
+                if (channel->getModes().find("i") != std::string::npos)
                     channel->addInvited(invited_user);
                 R341(server->getHost(), user, channel, invited_user);
                 RINVITE(invited_user, user, channel);

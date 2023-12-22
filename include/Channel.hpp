@@ -44,6 +44,7 @@ class	Channel
 		User	*findInvited( int fd );
 
 
+
 		std::string	getName( void ) const;
 		std::string	getKey( void ) const;
 		std::string	getTopic( void ) const;
