@@ -74,12 +74,12 @@ void	User::setRealname( std::string str )
 
 void	User::setMessage( std::string str )
 {
-	if (this->_message.empty())
-		this->_message = str;
-	else if (this->_message[this->_message.length() - 1] != '\n')
-		this->_message.append(str);
-	else
-		this->_message = str;
+	this->_message = str;
+}
+
+void	User::addMessage( std::string str )
+{
+	this->_message.append(str);
 }
 
 void	User::setReply( std::string str )

@@ -32,6 +32,7 @@
 # define CYAN "\033[0;36m"
 # define WHITE "\033[0;37m"
 
-# define BUFFER_SIZE 4200 //userMsg crash si n = BUFFER_SIZE
+# define BUFFER_SIZE 32
+# define MSG_LIMIT BUFFER_SIZE*32
 
 #endif

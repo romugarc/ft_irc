@@ -239,16 +239,16 @@ void    Server::loop(void)
     _fds[0].revents = 0;
     while (g_pascommun == 0)
     {
-        nfds_t n_fds = _fds.size();
-        if (poll(&_fds[0], n_fds, -1) == -1 && !g_pascommun)
-            throw std::runtime_error("Error server: poll");
-        if (_fds[0].revents & POLLIN)
+        for (std::deque<struct pollfd>::iterator i_pollfd = _fds.begin(); i_pollfd < _fds.end(); i_pollfd++)
         {
-            createUser();
-        }
-        for (std::deque<struct pollfd>::iterator i_pollfd = _fds.begin() + 1; i_pollfd < _fds.end(); i_pollfd++)
-        {
-            if (i_pollfd->revents & POLLIN)
+            nfds_t n_fds = _fds.size();
+            if (poll(&_fds[0], n_fds, -1) == -1 && !g_pascommun)
+                throw std::runtime_error("Error server: poll");
+            if (_fds[0].revents & POLLIN)
+            {
+                createUser();
+            }
+            else if (i_pollfd->revents & POLLIN)
             {
                 userMsg(i_pollfd->fd);
                 displayMessage(findUser(i_pollfd->fd));
@@ -282,30 +282,33 @@ void    Server::userMsg(int user_fd)
     char buffer[BUFFER_SIZE];
     ssize_t n = BUFFER_SIZE;
     std::string message;
+    User    *user = findUser(user_fd);
 
     for (int j = 0; j < BUFFER_SIZE; j++)
-        buffer[j] = 0;
-    while (n == BUFFER_SIZE)
     {
-        n = recv(user_fd, buffer, BUFFER_SIZE, 0);
-        if (n == -1)
-            throw std::runtime_error("Error: recv()");
-        else if (n == 0)
-        {
-            if (close(user_fd))
-                throw std::runtime_error("Error: close()");
-            findUser(user_fd)->setQuit();
-            return;
-        }
-        else
-        {
-            message.insert(message.length(), buffer, static_cast<size_t>(n));
-        }
+        buffer[j] = 0;
     }
+    n = recv(user_fd, buffer, BUFFER_SIZE, 0);
+    if (n == -1)
+        throw std::runtime_error("Error: recv()");
+    else if (n == 0)
+    {
+        if (close(user_fd))
+            throw std::runtime_error("Error: close()");
+        if (user != NULL)
+            user->setQuit();
+        return;
+    }
+    else
+        message.insert(message.length(), buffer, static_cast<size_t>(n));
 
-    User    *user = findUser(user_fd);
-    if (user != NULL)
-        user->setMessage(message);
+    if (user != NULL && user->getMessage().length() + static_cast<size_t>(n) < MSG_LIMIT)
+        user->addMessage(message);
+    else if (user != NULL)
+    {
+        user->addMessage(message);
+        user->addMessage("\r\n");
+    }
 }
 
 void    Server::parseMsg(User *current_user)

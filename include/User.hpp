@@ -39,6 +39,7 @@ class	User
 		void	setUsername( std::string str );
 		void	setRealname( std::string str );
 		void	setMessage( std::string str );
+		void	addMessage( std::string str );
 		void	setReply( std::string str );
 		void	addReply( std::string str );
 		void	setNbChanLimit( int limit );
