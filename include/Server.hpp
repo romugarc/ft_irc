@@ -30,10 +30,6 @@ class Server
         const std::string &getPassword(void) const;
         const std::deque<User *> &getUsers(void) const;
         const std::deque<Channel *> &getChannels(void) const;
-    
-        void    displayMessage(std::string message) const;
-        void    displayAllUsers(void) const;
-        void    displayAllChannels(void) const;
 
         void createSocket(void);
         void loop(void);
@@ -43,12 +39,12 @@ class Server
         void deleteUser(int user_fd);
         void userMsg(int user_fd);
         void parseMsg(User *current_user);
-        User *findUser(int fd);
-        User *findUser(std::string nick);
+        User *findUser(int fd) const;
+        User *findUser(std::string nick) const;
 
         void createChannel(User *user_creator, std::string name);
         void deleteChannel( std::string channel_name );
-        Channel *findChannel(std::string name);
+        Channel *findChannel(std::string name) const;
 
 		void execute( User *current_user );
 };

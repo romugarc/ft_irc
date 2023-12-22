@@ -1,47 +1,56 @@
 #include "ft_irc.hpp"
 
-void 	E403(REP_ARG, const std::string &channel);
-void	E441(REP_ARG, const std::string &channel, const std::string &input_name);
-void	E442(REP_ARG, const std::string &channel);
-void	E461(REP_ARG, const std::string &cmd);
-void	E482(REP_ARG, const std::string &channel);
-void	RKICK(REP_ARG, const std::string &channel, const std::string &nick, const std::string &comment);
+void	RKICK(User *u1, User *u2, Channel *c, const std::string &nick, const std::string &comment);
+void 	E403(const std::string &host, User *u, const std::string &target_channel);
+void	E441(const std::string &host, User *u, Channel *c, const std::string &target_nick);
+void	E442(const std::string &host, User *u, Channel *c);
+void	E461(const std::string &host, User *u, const std::string &cmd);
+void	E482(const std::string &host, User *u, Channel *c);
 
 void	kick(Server *server, User *user, std::deque<std::string> tokens)
 {
 	Channel	*channel = NULL;
 	User	*target = NULL;
 	std::deque<User*>	userlist;
+	std::string chan_name = "";
+	std::string nick = "";
+	std::string comment = "";
 
+	if (tokens.size() > 1)
+		chan_name = tokens[1];
+	if (tokens.size() > 2)
+		nick = tokens[2];
+	if (tokens.size() > 3)
+		comment = tokens[3];
 	if (user->getLoggedIn() == false)
 		return;
-	if (tokens.size() < 3 || tokens[1].empty()) //if not enough args
+	if (tokens.size() < 3 || chan_name.empty())
 	{
-		E461(user->getFd(), server->getHost(), user->getNick(), "KICK");
+		E461(server->getHost(), user, "KICK");
 		return;
 	}
 
-	channel = server->findChannel(tokens[1]);
+	channel = server->findChannel(chan_name);
 	if (channel == NULL)
 	{
-		E403(user->getFd(), server->getHost(), user->getNick(), tokens[1]);
+		E403(server->getHost(), user, chan_name);
 		return;
 	}
-	if (channel->findUser(user->getFd()) == NULL && channel->findOperator(user->getFd()) == NULL)
+	if (channel->findUser(user->getFd()) == NULL)
 	{
-		E442(user->getFd(), server->getHost(), user->getNick(), tokens[1]);
+		E442(server->getHost(), user, channel);
 		return;
 	}
 	if (channel->findOperator(user->getFd()) == NULL)
 	{
-		E482(user->getFd(), server->getHost(), user->getNick(), tokens[1]);
+		E482(server->getHost(), user, channel);
 		return;
 	}
 
-	target = channel->findUser(tokens[2]);
+	target = channel->findUser(nick);
 	if (target == NULL)
 	{
-		E441(user->getFd(), server->getHost(), user->getNick(), tokens[1], tokens[2]);
+		E441(server->getHost(), user, channel, nick);
 		return;
 	}
 	
@@ -49,12 +58,7 @@ void	kick(Server *server, User *user, std::deque<std::string> tokens)
 	{
 		userlist = channel->getUserList();
 		for (std::deque<User*>::iterator it = userlist.begin(); it < userlist.end() ;it++)
-		{
-			if (tokens.size() > 3)
-				RKICK((*it)->getFd(), server->getHost(), user->getNick(), tokens[1], tokens[2], tokens[3]);
-			else
-				RKICK((*it)->getFd(), server->getHost(), user->getNick(), tokens[1], tokens[2], "");
-		}
+			RKICK((*it), user, channel, nick, comment);
 		channel->delOperator(target->getFd());
 		channel->delUser(target->getFd());
 	}

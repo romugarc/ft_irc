@@ -1,18 +1,15 @@
 #include "ft_irc.hpp"
 
-void	RJOIN(REP_ARG, const std::string &channel);
-void	E461(REP_ARG, const std::string &cmd);
-void 	E403(REP_ARG, const std::string &channel);
-void	E405(REP_ARG, const std::string &channel);
-void	E475(REP_ARG, const std::string &channel);
-//void	E474(REP_ARG, const std::string &channel); //err ban mode
-void	E471(REP_ARG, const std::string &channel);
-void	E473(REP_ARG, const std::string &channel);
-//void	E476(REP_ARG, const std::string &channel);
-void	R332(REP_ARG, const std::string &channel, const std::string &topic);
-//void	R333(REP_ARG, const std::string &channel, const std::string &nick, const std::string &setat);
-void	R353(REP_ARG, const char &symbol, const std::string &channel, const std::string &members);
-void	R366(REP_ARG, const std::string &channel);
+void	RJOIN(User *u, Channel *c);
+void	E461(const std::string &host, User *u, const std::string &cmd);
+void 	E403(const std::string &host, User *u, const std::string &target_channel);
+void	E405(const std::string &host, User *u, Channel *c);
+void	E475(const std::string &host, User *u, Channel *c);
+void	E471(const std::string &host, User *u, Channel *c);
+void	E473(const std::string &host, User *u, Channel *c);
+void	R332(const std::string &host, User *u, Channel *c);
+void	R353(const std::string &host, User *u1, Channel *c, User *u2, const char &symbol, const std::string &prefix);
+void	R366(const std::string &host, User *u, Channel *c);
 
 static bool	isOp(int user_fd, Channel* channel)
 {
@@ -45,44 +42,44 @@ void	join(Server *server, User *user, std::deque<std::string> tokens)
 		channel = server->findChannel(channel_name);
 
     if (tokens.size() <= 1 || channel_name.empty()) //if not enough args
-		E461(user->getFd(), server->getHost(), user->getNick(), "JOIN");
+		E461(server->getHost(), user, "JOIN");
 	else if (channel_name.size() < 1 || (channel_name[0] != '#' && channel_name[0] != '&'))//if channel_name don't exist (no types # &)
-		E403(user->getFd(), server->getHost(), user->getNick(), channel_name);
+		E403(server->getHost(), user, channel_name);
 	else if (channel)//channel exist
 	{
 		if (user->getNbChanLimit() != 0 && user->getNbChan() >= user->getNbChanLimit()) //you have joined too many channels
-			E405(user->getFd(), server->getHost(), user->getNick(), channel->getName());
+			E405(server->getHost(), user, channel);
 		else if (channel->getModes().find("k") != std::string::npos && key.compare(channel->getKey())) //+k mode -> channel_name requires a key and incorrect key
-			E475(user->getFd(), server->getHost(), user->getNick(), channel->getName());
+			E475(server->getHost(), user, channel);
 		else if (channel->getModes().find("l") != std::string::npos && channel->getNbUserLimit() != 0 && channel->getNbUser() >= channel->getNbUserLimit()) //+l mode -> maximum limit of user already joined channel_name
-			E471(user->getFd(), server->getHost(), user->getNick(), channel->getName());
+			E471(server->getHost(), user, channel);
 		else if (channel->getModes().find("i") != std::string::npos && !channel->findInvited(user->getFd()))//+i mode -> invite only and not invited to the channel_name
-			E473(user->getFd(), server->getHost(), user->getNick(), channel->getName());
+			E473(server->getHost(), user, channel);
 		else //no error
 		{
 			channel->addUser(user);
 			channel->delInvited(user->getFd());
 			std::deque<User*> chan_users = channel->getUserList();
 			for (std::deque<User *>::iterator it = chan_users.begin(); it < chan_users.end(); it++)
-				RJOIN((*it)->getFd(), server->getHost(), user->getNick(), channel->getName());
+				RJOIN((*it), user, channel);
 			if (!channel->getTopic().empty())//if topic exist (send the current topic of the channel_name)
-				R332(user->getFd(), server->getHost(), user->getNick(), channel->getName(), channel->getTopic());
-			//commande NAMES
+				R332(server->getHost(), user, channel);
 			for (std::deque<User *>::iterator it = chan_users.begin(); it < chan_users.end(); it++)
 			{
 				if (isOp((*it)->getFd(), channel))
-					R353(user->getFd(), server->getHost(), user->getNick(), '=', channel->getName(), "@", (*it)->getNick());
+					R353(server->getHost(), user, channel, (*it), '=', "@");
 				else
-					R353(user->getFd(), server->getHost(), user->getNick(), '=', channel->getName(), "", (*it)->getNick());
+					R353(server->getHost(), user, channel, (*it), '=', "");
 			}
-			R366(user->getFd(), server->getHost(), user->getNick(), channel->getName()); //end of the list R353
+			R366(server->getHost(), user, channel); //end of the list R353
 		}
 	}
 	else //channel don't exist
 	{
 		server->createChannel(user, channel_name);
-		RJOIN(user->getFd(), server->getHost(), user->getNick(), channel_name);
-		R353(user->getFd(), server->getHost(), user->getNick(), '=', channel_name, "@", user->getNick());
-		R366(user->getFd(), server->getHost(), user->getNick(), channel_name);
+		channel = server->findChannel(channel_name);
+		RJOIN(user, user, channel);
+		R353(server->getHost(), user, channel, user, '=', "@");
+		R366(server->getHost(), user, channel);
 	}
 }

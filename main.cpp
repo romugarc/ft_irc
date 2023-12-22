@@ -1,6 +1,4 @@
 #include "ft_irc.hpp"
-#include <cstdlib>
-#include <csignal>
 
 extern bool g_pascommun;
 

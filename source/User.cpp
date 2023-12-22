@@ -5,7 +5,9 @@ User::User( void ) : _logged_in(false), _pass(false), _quit(false), _nb_chan_lim
 	_modes = "";
 	_nick = "";
 	_username = "";
+	_realname = "";
 	_message = "";
+	_reply = "";
 }
 
 User::User( User const &src ) : _logged_in(src.getLoggedIn()), _nb_chan_limit(src.getNbChanLimit())
@@ -23,7 +25,9 @@ User &User::operator=( User const &rhs )
 	this->_pass = rhs.getPass();
 	this->_nick = rhs.getNick();
 	this->_username = rhs.getUsername();
+	this->_realname = rhs.getRealname();
 	this->_message = rhs.getMessage();
+	this->_reply = rhs.getReply();
 	if (this->_tokens.size() > 0)
 		this->_tokens.clear();
 	for (size_t i = 0; i < rhs.getTokens().size(); i++)
@@ -32,6 +36,7 @@ User &User::operator=( User const &rhs )
 }
 
 ////////////////////////setters////////////////////////
+
 void	User::setHostName( std::string hostname )
 {
 	this->_hostname = hostname;
@@ -62,6 +67,11 @@ void	User::setUsername( std::string str )
 	this->_username = str;
 }
 
+void	User::setRealname( std::string str )
+{
+	this->_realname = str;
+}
+
 void	User::setMessage( std::string str )
 {
 	if (this->_message.empty())
@@ -70,6 +80,16 @@ void	User::setMessage( std::string str )
 		this->_message.append(str);
 	else
 		this->_message = str;
+}
+
+void	User::setReply( std::string str )
+{
+	this->_reply = str;
+}
+
+void	User::addReply( std::string str )
+{
+	this->_reply.append(str);
 }
 
 void	User::setNbChanLimit( int limit )
@@ -124,9 +144,19 @@ std::string	User::getUsername( void ) const
 	return (this->_username);
 }
 
+std::string	User::getRealname( void ) const
+{
+	return (this->_realname);
+}
+
 std::string	User::getMessage( void ) const
 {
 	return (this->_message);
+}
+
+std::string	User::getReply( void ) const
+{
+	return (this->_reply);
 }
 
 std::deque<std::string>	User::getTokens( void ) const
@@ -149,7 +179,22 @@ std::string	User::getModes( void ) const
 	return (this->_modes);
 }
 
+std::string User::getClientId( void ) const
+{
+    std::string id;
+
+    id = _nick + "!" + _username + "@" + _hostname;
+    return (id);
+}
+
 ////////////////////////functions////////////////////////
+
+void	User::send_to_client(void)
+{
+	displayReply(this);
+	if (send(_fd, _reply.c_str(), _reply.size(), 0) == -1)
+		throw std::runtime_error("Error: send()");
+}
 
 static int checkWhitespace(char c)
 {
@@ -185,14 +230,5 @@ void	User::tokenizeMessage(std::string message)
 			this->_tokens.push_back(message.substr(i, (j - i)));
 		i = j;
 	}
-}
-
-void	User::displayTokens( void ) const
-{
-	std::cout << "nb tokens: " << getTokens().size() << std::endl;
-	for (size_t i = 0; i < this->_tokens.size(); i++)
-	{
-		std::cout << "token " << i << ": ";
-		std::cout << this->_tokens[i] << std::endl;
-	}
+	//displayTokens(this);
 }

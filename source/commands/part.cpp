@@ -1,10 +1,9 @@
 #include "ft_irc.hpp"
 
-void	RPART(REP_ARG, const std::string &channel, const std::string &comment);
-
-void	E461(REP_ARG, const std::string &cmd);
-void 	E403(REP_ARG, const std::string &channel);
-void	E442(REP_ARG, const std::string &channel);
+void	RPART(User *u1, User *u2, Channel *c, const std::string &comment);
+void	E461(const std::string &host, User *u, const std::string &cmd);
+void 	E403(const std::string &host, User *u, const std::string &target_channel);
+void	E442(const std::string &host, User *u, Channel *c);
 
 void	part(Server *server, User *user, std::deque<std::string> tokens)
 {
@@ -22,16 +21,16 @@ void	part(Server *server, User *user, std::deque<std::string> tokens)
 		channel = server->findChannel(channel_name);
 
     if (tokens.size() <= 1 || channel_name.empty()) //if not enough args
-		E461(user->getFd(), server->getHost(), user->getNick(), "PART");
+		E461(server->getHost(), user, "PART");
 	else if (channel_name.size() < 1 || (channel_name[0] != '#' && channel_name[0] != '&') || !channel)//if channel_name don't exist (no types # &)
-		E403(user->getFd(), server->getHost(), user->getNick(), channel_name);
+		E403(server->getHost(), user, channel_name);
     else if (!channel->findUser(user->getFd())) //if user is not on channel
-        E442(user->getFd(), server->getHost(), user->getNick(), channel_name);
+        E442(server->getHost(), user, channel);
     else
     {
         std::deque<User*> chan_users = channel->getUserList();
         for (std::deque<User*>::iterator it = chan_users.begin(); it < chan_users.end() ;it++)
-            RPART((*it)->getFd(), server->getHost(), user->getNick(), channel_name, reason);
+            RPART((*it), user, channel, reason);
         channel->delOperator(user->getFd());
 	    channel->delUser(user->getFd());
         if (channel->getNbUser() < 1)

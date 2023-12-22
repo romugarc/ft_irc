@@ -5,6 +5,7 @@ SRCS	=	main.cpp			\
 			source/User.cpp		\
 			source/Channel.cpp	\
 			source/Rep.cpp		\
+			source/display.cpp	\
 			source/commands/pass.cpp	\
 			source/commands/nick.cpp	\
 			source/commands/user.cpp	\
@@ -15,7 +16,9 @@ SRCS	=	main.cpp			\
 			source/commands/topic.cpp	\
 			source/commands/privmsg.cpp	\
 			source/commands/quit.cpp	\
-			source/commands/part.cpp
+			source/commands/part.cpp	\
+			source/commands/whois.cpp	\
+			source/commands/notice.cpp
 
 OBJS	=	${SRCS:.cpp=.o}
 
@@ -23,10 +26,12 @@ DIR_INC	=	include
 
 HEADER_FILES	= ${DIR_INC}/ft_irc.hpp		\
 				  ${DIR_INC}/Channel.hpp 	\
+				  ${DIR_INC}/Server.hpp		\
+				  ${DIR_INC}/User.hpp		\
 				  ${DIR_INC}/Commands.hpp	\
 				  ${DIR_INC}/Rep.hpp		\
-				  ${DIR_INC}/Server.hpp		\
-				  ${DIR_INC}/User.hpp
+				  ${DIR_INC}/display.hpp
+
 
 CC		=	c++
 RM		=	rm -f

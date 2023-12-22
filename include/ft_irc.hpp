@@ -3,21 +3,24 @@
 
 #include <iostream>
 #include <string>
-#include <sys/socket.h> //socket(), bind(), listen()
+#include <sys/socket.h>
 #include <sys/types.h>
-#include <netdb.h> //struct addrinfo   getnameinfo
-#include <unistd.h> //close()
-#include <poll.h> //poll(), struct pollfd
+#include <netdb.h>
+#include <unistd.h>
+#include <poll.h>
 #include <vector>
 #include <deque>
 #include <fcntl.h>
-#include <sstream> //stringstream
+#include <sstream>
+#include <cstdlib>
+#include <csignal>
 
 #include "Server.hpp"
 #include "Channel.hpp"
 #include "User.hpp"
 #include "Rep.hpp"
 #include "Commands.hpp"
+#include "display.hpp"
 
 # define RESET "\033[0m"
 # define BLACK "\033[0;30m"

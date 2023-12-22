@@ -1,453 +1,389 @@
 #include "Rep.hpp"
 
-//REP_ARG == int const &fd, const std::string &host, const std::string &client
-
-static void displayReply(std::string message)
+void	RNICK(User *u1, User *u2, const std::string &nick)
 {
-    std::cout << CYAN;
-    for(std::string::iterator it=message.begin(); it!=message.end(); it++)
-    {
-        if (*it == '\r')
-            std::cout << "\\r";
-        else if (*it == '\n')
-            std::cout << "\\n";
-        else
-            std::cout << *it;
-    }
-    std::cout << RESET << std::endl;
-}
-
-void	send_to_client(std::string msg, int const &fd)
-{
-	std::string	message;
-
-	message = msg +"\r\n";
-	displayReply(message);
-	if (send(fd, message.c_str(), message.size(), 0) == -1)
-		throw std::runtime_error("Error: send()");
-}
-
-void	RJOIN(REP_ARG, const std::string &channel)
-{
-	(void)host;
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << client << " JOIN " << channel;
-	send_to_client(output.str(), fd);
+	output << ":" << u2->getClientId() << " NICK " << nick << "\r\n";
+	u1->addReply(output.str());
 }
 
-void	RPART(REP_ARG, const std::string &channel, const std::string &comment)
+void	RINVITE(User *u1, User *u2, Channel *c)
 {
-	(void)host;
+	std::stringstream	output;
+
+	output.str("");
+	output << ":" << u2->getClientId() << " INVITE " << u1->getNick() << " " << c->getName() << "\r\n";
+	u1->addReply(output.str());
+}
+
+void	RJOIN(User *u1, User *u2, Channel *c)
+{
+	std::stringstream	output;
+
+	output.str("");
+	output << ":" << u2->getClientId() << " JOIN " << c->getName() << "\r\n";
+	u1->addReply(output.str());
+}
+
+void	RPART(User *u1, User *u2, Channel *c, const std::string &comment)
+{
 	std::stringstream	output;
 
 	output.str("");
 	if (comment.size() > 0)
-		output << ":" << client << " PART " << channel << " " << " :" << comment;
+		output << ":" << u2->getClientId() << " PART " << c->getName() << " " << comment << "\r\n";
 	else
-		output << ":" << client << " PART " << channel << " " << " :No comment";
-	send_to_client(output.str(), fd);
+		output << ":" << u2->getClientId() << " PART " << c->getName() << " " << "No comment" << "\r\n";
+	u1->addReply(output.str());
 }
 
-void	RKICK(REP_ARG, const std::string &channel, const std::string &nick, const std::string &comment)
+void	RKICK(User *u1, User *u2, Channel *c, const std::string &nick, const std::string &comment)
 {
-	(void)host;
 	std::stringstream	output;
 
 	output.str("");
 	if (comment.size() > 0)
-		output << ":" << client << " KICK " << channel << " " << nick << " :" << comment;
+		output << ":" << u2->getClientId() << " KICK " << c->getName() << " " << nick << " :" << comment << "\r\n";
 	else
-		output << ":" << client << " KICK " << channel << " " << nick << " :No comment";
-	send_to_client(output.str(), fd);
+		output << ":" << u2->getClientId() << " KICK " << c->getName() << " " << nick << " :No comment" << "\r\n";
+	u1->addReply(output.str());
 }
 
-void	RMODE(REP_ARG, const std::string &target, const char operation, const char mode, const std::string &param)
-{
-	(void)host;
-	std::stringstream	output;
-
-	output.str("");
-	output << ":" << client << " MODE " << target << " " << operation << mode << " " << param;
-	send_to_client(output.str(), fd);
-}
-
-void	RQUIT(REP_ARG, const std::string &comment)
-{
-	(void)host;
-	std::stringstream	output;
-
-	output.str("");
-	output << ":" << client << " QUIT " << ":Quit: " << comment;
-	send_to_client(output.str(), fd);
-}
-
-void	RPRIVMSG(REP_ARG, const std::string &target, const std::string &content)
-{
-	(void)host;
-	std::stringstream	output;
-
-	output.str("");
-	output << ":" << client << " PRIVMSG " << target << " :" << content;
-	send_to_client(output.str(), fd);
-}
-
-void 	R001(REP_ARG, const std::string &user, const std::string &userhost)
+void	RMODE(User *u1, User *u2, const std::string &target, const char operation, const char mode, const std::string &param)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 001 " << client << " :Welcome to the IRC 42 Network, " << client << "!" << user << "@" << userhost;
-	send_to_client(output.str(), fd);
+	output << ":" << u2->getClientId() << " MODE " << target << " " << operation << mode << " " << param << "\r\n";
+	u1->addReply(output.str());
 }
 
-void	R221(REP_ARG, const std::string &user_modes)
+void	RQUIT(User *u1, User *u2, const std::string &comment)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 221 " << client << " +" << user_modes;
-	send_to_client(output.str(), fd);
+	output << ":" << u2->getClientId() << " QUIT " << ":Quit: " << comment << "\r\n";
+	u1->addReply(output.str());
 }
 
-
-void	R324(REP_ARG, const std::string &channel, const std::string &mode, const std::string &param_lst)
+void	RPRIVMSG(User *u1, User *u2, const std::string &target, const std::string &content)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 324 " << client << " " << channel << " +" << mode << " " << param_lst;
-	send_to_client(output.str(), fd);
+	output << ":" << u2->getClientId() << " PRIVMSG " << target << " :" << content << "\r\n";
+	u1->addReply(output.str());
 }
 
-void	R331(REP_ARG, const std::string &channel)
+void 	R001(const std::string &host, User *u)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 331 " << client << " " << channel << " :No topic is set";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 001 " << u->getNick() << " :Welcome to the IRC 42 Network, " << u->getClientId() << "\r\n";
+	u->addReply(output.str());
 }
 
-void	R332(REP_ARG, const std::string &channel, const std::string &topic)
+void	R221(const std::string &host, User *u)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 332 " << client << " " << channel << " :" << topic;
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 221 " << u->getNick() << " +" << u->getModes() << "\r\n";
+	u->addReply(output.str());
 }
 
-void	R341(REP_ARG, const std::string &channel, const std::string &target_nick)
+void	R311(const std::string &host, User *u1, User *u2)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 341 " << client << " " << channel << " " << target_nick;
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 311 " << u1->getNick() << " " << u2->getNick() << " " << u2->getUsername() << " " << u2->getHostName() << " * :" << u2->getRealname() << "\r\n";
+	u1->addReply(output.str());
 }
 
-void	R353(REP_ARG, const char &symbol, const std::string &channel, const std::string &prefix, const std::string &nick)
+void	R318(const std::string &host, User *u)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 353 " << client << " " << symbol << " " << channel << " :" << prefix << nick;
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 318 " << u->getNick() << " " << u->getNick() << " :End of /WHOIS list" << "\r\n";
+	u->addReply(output.str());
 }
 
-void	R366(REP_ARG, const std::string &channel)
+void	R324(const std::string &host, User *u, Channel *c)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 366 " << client << " " << channel << " :End of /NAMES list";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 324 " << u->getNick() << " " << c->getName() << " +" << c->getModes() << " " << c->getKey();
+	if (c->getNbUserLimit() > 0)
+        output << " " << c->getNbUserLimit();
+	output << "\r\n";
+	u->addReply(output.str());
 }
 
-void	R372(REP_ARG, const std::string &line)
+void	R331(const std::string &host, User *u, Channel *c)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 372 " << client << " : " << line;
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 331 " << u->getNick() << " " << c->getName() << " :No topic is set" << "\r\n";
+	u->addReply(output.str());
 }
 
-void	R375(REP_ARG)
+void	R332(const std::string &host, User *u, Channel *c)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 375 " << client << " :- ircserv Message of the day - ";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 332 " << u->getNick() << " " << c->getName() << " :" << c->getTopic() << "\r\n";
+	u->addReply(output.str());
 }
 
-void	R376(REP_ARG)
+void	R341(const std::string &host, User *u1, Channel *c, User *u2)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 376 " << client << " :End of MOTD command";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 341 " << u1->getNick() << " " << c->getName() << " " << u2->getNick() << "\r\n";
+	u1->addReply(output.str());
 }
 
-void	R391(REP_ARG)
-{
-	std::stringstream	output;
-	char 				date_string[50];
-	time_t 				curr_time;
-	tm 					*curr_tm;
-
-	output.str("");
-	time(&curr_time);
-	curr_tm = localtime(&curr_time);
-	strftime(date_string, 50, "%c", curr_tm);
-	output << ":" << host << " 391 " << client << " ircserv :" << date_string;
-	send_to_client(output.str(), fd);
-}
-
-void	E401(REP_ARG, const std::string &target_nick)
+void	R353(const std::string &host, User *u1, Channel *c, User *u2, const char &symbol, const std::string &prefix)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 401 " << client << " " << target_nick << " :No such nick/channel";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 353 " << u1->getNick() << " " << symbol << " " << c->getName() << " :" << prefix << u2->getNick() << "\r\n";
+	u1->addReply(output.str());
 }
 
-void	E402(REP_ARG, const std::string &server)
+void	R366(const std::string &host, User *u, Channel *c)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 402 " << client << " " << server << " :No such server";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 366 " << u->getNick() << " " << c->getName() << " :End of /NAMES list" << "\r\n";
+	u->addReply(output.str());
 }
 
-void 	E403(REP_ARG, const std::string &channel)
+void	E401(const std::string &host, User *u, const std::string &target_nick)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 403 " << client << " " << channel << " :No such channel";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 401 " << u->getNick() << " " << target_nick << " :No such nick/channel" << "\r\n";
+	u->addReply(output.str());
 }
 
-void 	E404(REP_ARG, const std::string &channel)
+void 	E403(const std::string &host, User *u, const std::string &target_channel)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 404 " << client << " " << channel << " :Cannot send to channel";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 403 " << u->getNick() << " " << target_channel << " :No such channel" << "\r\n";
+	u->addReply(output.str());
 }
 
-void	E405(REP_ARG, const std::string &channel)
+void 	E404(const std::string &host, User *u, Channel *c)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 405 " << client << " " << channel <<  " :You have joined too many channels";	
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 404 " << u->getNick() << " " << c->getName() << " :Cannot send to channel" << "\r\n";
+	u->addReply(output.str());
 }
 
-void	E411(REP_ARG, const std::string &cmd)
+void	E405(const std::string &host, User *u, Channel *c)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 411 " << client << " :No recipient given (" << cmd << ")";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 405 " << u->getNick() << " " << c->getName() <<  " :You have joined too many channels" << "\r\n";	
+	u->addReply(output.str());
 }
 
-void	E412(REP_ARG)
+void	E411(const std::string &host, User *u, const std::string &cmd)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 412 " << client << " :No text to send";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 411 " << u->getNick() << " :No recipient given (" << cmd << ")" << "\r\n";
+	u->addReply(output.str());
 }
 
-void	E421(REP_ARG, const std::string &cmd)
+void	E412(const std::string &host, User *u)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 421 " << client << " " << cmd << " :Unknown command";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 412 " << u->getNick() << " :No text to send" << "\r\n";
+	u->addReply(output.str());
 }
 
-void	E422(REP_ARG)
+void	E421(const std::string &host, User *u)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 422 " << client << " :MOTD File is missing";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 421 " << u->getNick() << " " << u->getTokens()[0] << " :Unknown command" << "\r\n";
+	u->addReply(output.str());
 }
 
-void	E431(REP_ARG)
+void	E431(const std::string &host, User *u)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 431 " << client << " :No nickname given";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 431 " << u->getNick() << " :No nickname given" << "\r\n";
+	u->addReply(output.str());
 }
 
-void	E432(REP_ARG, const std::string &nick)
+void	E432(const std::string &host, User *u, const std::string &nick)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 432 " << client << " " << nick << " :Erroneous nickname";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 432 " << u->getNick() << " " << nick << " :Erroneous nickname" << "\r\n";
+	u->addReply(output.str());
 }
 
-void	E433(REP_ARG, const std::string &nick)
+void	E433(const std::string &host, User *u, const std::string &nick)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 433 " << client << " " << nick << " :Nickname is already in use";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 433 " << u->getNick() << " " << nick << " :Nickname is already in use" << "\r\n";
+	u->addReply(output.str());
 }
 
-void	E441(REP_ARG, const std::string &channel, const std::string &target_nick)
+void	E441(const std::string &host, User *u, Channel *c, const std::string &target_nick)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 441 " << client << " " << target_nick << " " << channel << " :They aren't on that channel";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 441 " << u->getNick() << " " << target_nick << " " << c->getName() << " :They aren't on that channel" << "\r\n";
+	u->addReply(output.str());
 }
 
-void	E442(REP_ARG, const std::string &channel)
+void	E442(const std::string &host, User *u, Channel *c)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 442 " << client << " " << channel << " :You're not on that channel";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 442 " << u->getNick() << " " << c->getName() << " :You're not on that channel" << "\r\n";
+	u->addReply(output.str());
 }
 
-void	E443(REP_ARG, const std::string &channel, const std::string &target_nick)
+void	E443(const std::string &host, User *u1, Channel *c, User *u2)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 443 " << client << " " << target_nick << " " << channel << " :is already on channel";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 443 " << u1->getNick() << " " << u2->getNick() << " " << c->getName() << " :is already on channel" << "\r\n";
+	u1->addReply(output.str());
 }
 
-void	E461(REP_ARG, const std::string &cmd)
+void	E461(const std::string &host, User *u, const std::string &cmd)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 461 " << client << " " << cmd << " :Not enough parameters";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 461 " << u->getNick() << " " << cmd << " :Not enough parameters" << "\r\n";
+	u->addReply(output.str());
 }
 
-void	E462(REP_ARG)
+void	E462(const std::string &host, User *u)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 462 " << client << " :Unauthorized command (already registered)";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 462 " << u->getNick() << " :Unauthorized command (already registered)" << "\r\n";
+	u->addReply(output.str());
 }
 
-void	E464(REP_ARG)
+void	E464(const std::string &host, User *u)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 464 " << client << " :Password incorrect";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 464 " << u->getNick() << " :Password incorrect" << "\r\n";
+	u->addReply(output.str());
 }
 
-void	E471(REP_ARG, const std::string &channel)
+void	E471(const std::string &host, User *u, Channel *c)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 471 " << client << " " << channel << " :Cannot join channel (+l)";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 471 " << u->getNick() << " " << c->getName() << " :Cannot join channel (+l)" << "\r\n";
+	u->addReply(output.str());
 }
 
-void 	E472(REP_ARG, const std::string &channel, const char &mode)
+void 	E472(const std::string &host, User *u, Channel *c, const char &mode) //mode user
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 472 " << client << " " << mode << " :is unknown mode char to me for "
-	<< channel;
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 472 " << u->getNick() << " " << mode << " :is unknown mode char to me for " << c->getName() << "\r\n";
+	u->addReply(output.str());
 }
 
-void	E473(REP_ARG, const std::string &channel)
+void	E473(const std::string &host, User *u, Channel *c)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 473 " << client << " " << channel << " :Cannot join channel (+i)";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 473 " << u->getNick() << " " << c->getName() << " :Cannot join channel (+i)" << "\r\n";
+	u->addReply(output.str());
 }
 
-void	E475(REP_ARG, const std::string &channel)
+void	E475(const std::string &host, User *u, Channel *c)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 475 " << client << " " << channel << " :Cannot join channel (+k)";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 475 " << u->getNick() << " " << c->getName() << " :Cannot join channel (+k)" << "\r\n";
+	u->addReply(output.str());
 }
 
-void	E482(REP_ARG, const std::string &channel)
+void	E482(const std::string &host, User *u, Channel *c)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 482 " << client << " " << channel << " :You're not channel operator";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 482 " << u->getNick() << " " << c->getName() << " :You're not channel operator" << "\r\n";
+	u->addReply(output.str());
 }
 
-void	E501(REP_ARG)
+void	E501(const std::string &host, User *u) //mode user
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 501 " << client << " :Unknown MODE flag";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 501 " << u->getNick() << " :Unknown MODE flag" << "\r\n";
+	u->addReply(output.str());
 }
 
-void	E502(REP_ARG)
+void	E502(const std::string &host, User *u) //mode user
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 502 " << client << " :Cant change mode for other users";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 502 " << u->getNick() << " :Cant change mode for other users" << "\r\n";
+	u->addReply(output.str());
 }
 
-void	E525(REP_ARG, const std::string &channel)
+void	E525(const std::string &host, User *u, Channel *c)
 {
 	std::stringstream	output;
 
 	output.str("");
-	output << ":" << host << " 525 " << client << " " << channel << " :Key is not well-formed";
-	send_to_client(output.str(), fd);
+	output << ":" << host << " 525 " << u->getNick() << " " << c->getName() << " :Key is not well-formed" << "\r\n";
+	u->addReply(output.str());
 }
 
-void	E696(REP_ARG, const std::string &channel, const std::string &mode, const std::string &password)
-{
-	std::stringstream	output;
-
-	output.str("");
-	output << ":" << host << " 696 " << client << " " << channel << " " << mode << " " << password << " :limit must only contained digit";
-	send_to_client(output.str(), fd);
-}

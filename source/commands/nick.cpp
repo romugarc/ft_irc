@@ -1,9 +1,9 @@
 #include "ft_irc.hpp"
 
-void	E431(REP_ARG);
-void	E432(REP_ARG, const std::string &nick);
-void	E433(REP_ARG, const std::string &nick);
-//void    E436(REP_ARG, const std::string &nick, const std::string &user, const std::string &host);
+void	RNICK(User *u, const std::string &nick);
+void	E431(const std::string &host, User *u);
+void	E432(const std::string &host, User *u, const std::string &nick);
+void	E433(const std::string &host, User *u, const std::string &nick);
 
 static bool invalidCharacters(std::string str)
 {
@@ -41,14 +41,14 @@ void	nick(Server *server, User *user, std::deque<std::string> tokens)
     if (tokens.size() > 1)
         nick = tokens[1];
     if (tokens.size() <= 1 || nick.empty()) //if not enough args
-        E431(user->getFd(), server->getHost(), user->getNick());
+        E431(server->getHost(), user);
     else if (invalidCharacters(nick)) //if invalid character used
-        E432(user->getFd(), server->getHost(), user->getNick(), nick);
+        E432(server->getHost(), user, nick);
     else if (isAlreadyUsed(server, user->getFd(), nick)) //if nickname already exist
-        E433(user->getFd(), server->getHost(), user->getNick(), nick);
+        E433(server->getHost(), user, nick);
     else
     {
-        //reussite
+        RNICK(user, user, nick);
         user->setNick(nick);
     }
 }

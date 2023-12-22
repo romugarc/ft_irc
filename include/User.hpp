@@ -15,8 +15,10 @@ class	User
 		bool	_quit;
 		std::string _nick;
 		std::string	_username;
+		std::string	_realname;
 		std::string	_message;
 		std::deque<std::string> _tokens;
+		std::string	_reply;
 		int	_nb_chan_limit;
 		int	_nb_chan;
 		std::string	_modes;
@@ -28,8 +30,6 @@ class	User
 
 		User &operator=( User const &rhs );
 
-		void	displayTokens( void ) const;
-
 		void	setHostName( std::string hostname );
 		void	setFd( int fd );
 		void	setLoggedIn( bool logged );
@@ -37,7 +37,10 @@ class	User
 		void	setQuit( void );
 		void	setNick( std::string str );
 		void	setUsername( std::string str );
+		void	setRealname( std::string str );
 		void	setMessage( std::string str );
+		void	setReply( std::string str );
+		void	addReply( std::string str );
 		void	setNbChanLimit( int limit );
 		void	setNbChan( int nb_chan );
 
@@ -48,13 +51,16 @@ class	User
 		bool	getQuit( void ) const;
 		std::string	getNick( void ) const;
 		std::string	getUsername( void ) const;
+		std::string	getRealname( void ) const;
 		std::string	getMessage( void ) const;
+		std::string	getReply( void ) const;
 		std::deque<std::string>	getTokens( void ) const;
 		int	getNbChanLimit( void ) const;
 		int	getNbChan( void ) const;
 		std::string	getModes( void ) const;
+		std::string getClientId( void ) const;
 		
-		////////////////parsing
+		void	send_to_client();
 		void	tokenizeMessage(std::string message);
 };
 

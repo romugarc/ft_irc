@@ -3,56 +3,51 @@
 
 #include "ft_irc.hpp"
 
-#define REP_ARG int const &fd, const std::string &host, const std::string &client
+void	send_to_client(User *u);
 
-void	send_to_client(std::string msg, int const &fd, Server *server);
+void	RNICK(User *u1, User *u2, const std::string &nick);
+void	RJOIN(User *u1, User *u2, Channel *c);
+void	RPART(User *u1, User *u2, Channel *c, const std::string &comment);
+void	RKICK(User *u1, User *u2, Channel *c, const std::string &nick, const std::string &comment);
+void	RMODE(User *u1, User *u2, const std::string &target, const char operation, const char mode, const std::string &param);
+void	RQUIT(User *u1, User *u2, const std::string &comment);
+void	RPRIVMSG(User *u1, User *u2, const std::string &target, const std::string &content);
 
-void	RJOIN(REP_ARG, const std::string &channel);
-void	RMODE(REP_ARG, const std::string &target, const char operation, const char mode, const std::string &param);
-void	RKICK(REP_ARG, const std::string &channel, const std::string &nick, const std::string &comment);
-void	RQUIT(REP_ARG, const std::string &comment);
-void	RPRIVMSG(REP_ARG, const std::string &target, const std::string &content);
+void 	R001(const std::string &host, User *u);
+void	R221(const std::string &host, User *u);
+void	R311(const std::string &host, User *u1, User *u2);
+void	R318(const std::string &host, User *u);
+void	R319(const std::string &host, User *u, Channel *c);
+void	R324(const std::string &host, User *u, Channel *c);
+void	R331(const std::string &host, User *u, Channel *c);
+void	R332(const std::string &host, User *u, Channel *c);
+void	R341(const std::string &host, User *u1, Channel *c, User *u2);
+void	R353(const std::string &host, User *u1, Channel *c, User *u2, const char &symbol, const std::string &prefix);
+void	R366(const std::string &host, User *u, Channel *c);
 
-void 	R001(REP_ARG, const std::string &user, const std::string &userhost);
-void	R221(REP_ARG, const std::string &user_modes);
-void	R324(REP_ARG, const std::string &channel, const std::string &mode, const std::string &param_lst);
-void	R331(REP_ARG, const std::string &channel);
-void	R332(REP_ARG, const std::string &channel, const std::string &topic);
-void	R341(REP_ARG, const std::string &channel, const std::string &input_name);
-void    R353(REP_ARG, const char &symbol, const std::string &channel, const std::string &prefix, const std::string &nick);
-void	R366(REP_ARG, const std::string &channel);
-void	R372(REP_ARG, const std::string &line);
-void	R375(REP_ARG);
-void	R376(REP_ARG);
-void	R391(REP_ARG);
-
-void	E401(REP_ARG, const std::string &input_name);
-void	E402(REP_ARG, const std::string &server_name);
-void 	E403(REP_ARG, const std::string &channel);
-void 	E404(REP_ARG, const std::string &channel);
-void	E405(REP_ARG, const std::string &channel);
-void	E411(REP_ARG, const std::string &cmd);
-void	E412(REP_ARG);
-void    E421(REP_ARG, const std::string &cmd);
-void    E422(REP_ARG);
-void 	E431(REP_ARG);
-void	E432(REP_ARG, const std::string &bad_name);
-void	E433(REP_ARG, const std::string &bad_name);
-void	E441(REP_ARG, const std::string &channel, const std::string &input_name);
-void	E442(REP_ARG, const std::string &channel);
-void	E443(REP_ARG, const std::string &channel, const std::string &input_name);
-void	E461(REP_ARG, const std::string &cmd);
-void	E462(REP_ARG);
-void	E464(REP_ARG);
-void	E471(REP_ARG, const std::string &channel);
-void 	E472(REP_ARG, const std::string &channel, const char &mode);
-void	E473(REP_ARG, const std::string &channel);
-void	E475(REP_ARG, const std::string &channel);
-void	E482(REP_ARG, const std::string &channel);
-void	E501(REP_ARG);
-void	E502(REP_ARG);
-void    E525(REP_ARG, const std::string &channel);
-void    E696(REP_ARG, const std::string &channel, const std::string &mode, const std::string &password);
-
+void	E401(const std::string &host, User *u, const std::string &target_nick);
+void 	E403(const std::string &host, User *u, const std::string &target_channel);
+void 	E404(const std::string &host, User *u, Channel *c);
+void	E405(const std::string &host, User *u, Channel *c);
+void	E411(const std::string &host, User *u, const std::string &cmd);
+void	E412(const std::string &host, User *u);
+void	E421(const std::string &host, User *u);
+void	E431(const std::string &host, User *u);
+void	E432(const std::string &host, User *u, const std::string &nick);
+void	E433(const std::string &host, User *u, const std::string &nick);
+void	E441(const std::string &host, User *u, Channel *c, const std::string &target_nick);
+void	E442(const std::string &host, User *u, Channel *c);
+void	E443(const std::string &host, User *u1, Channel *c, User *u2);
+void	E461(const std::string &host, User *u, const std::string &cmd);
+void	E462(const std::string &host, User *u);
+void	E464(const std::string &host, User *u);
+void	E471(const std::string &host, User *u, Channel *c);
+void 	E472(const std::string &host, User *u, Channel *c, const char &mode);
+void	E473(const std::string &host, User *u, Channel *c);
+void	E475(const std::string &host, User *u, Channel *c);
+void	E482(const std::string &host, User *u, Channel *c);
+void	E501(const std::string &host, User *u);
+void	E502(const std::string &host, User *u);
+void	E525(const std::string &host, User *u, Channel *c);
 
 #endif

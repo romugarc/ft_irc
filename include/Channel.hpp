@@ -12,7 +12,7 @@ class	Channel
 		std::string	_key;
 		std::string	_topic;
 		std::string	_modes;
-		std::deque<User*> _userlist; //delete quand un user est delete dans le server
+		std::deque<User*> _userlist;
 		std::deque<User*> _oplist;
 		std::deque<User*> _invitedlist;
 		int	_nb_user_limit;

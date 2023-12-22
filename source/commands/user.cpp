@@ -1,19 +1,20 @@
 #include "ft_irc.hpp"
 
-void	E461(REP_ARG, const std::string &cmd);
-void	E462(REP_ARG);
+void	E461(const std::string &host, User *u, const std::string &cmd);
+void	E462(const std::string &host, User *u);
 
 void	user(Server *server, User *user, std::deque<std::string> tokens)
 {
   (void)server;
   if (tokens.size() <= 1 || tokens[1].empty()) //if not enough args
-		E461(user->getFd(), server->getHost(), user->getNick(), "USER");
+		E461(server->getHost(), user, "USER");
 	else if (user->getLoggedIn() == true) //if registration already done
-		E462(user->getFd(), server->getHost(), user->getNick());
+		E462(server->getHost(), user);
   else
   {
-    //reussite
     user->setUsername(tokens[1]);
+    //realname
+    if (tokens.size() >= 5 && !tokens[2].compare("0") && !tokens[3].compare("*"))
+      user->setRealname(tokens[4]);
   }
-  //set the <realname> ?
 }
